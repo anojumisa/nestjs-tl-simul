@@ -104,6 +104,12 @@ import { CoursesModule } from './courses/courses.module';
 export class AppModule {}
 ```
 
+**Penjelasan singkat:**
+
+- Di sini kamu menghubungkan **root module** (`AppModule`) dengan **feature module** baru yaitu `CoursesModule`.
+- Dengan menaruh `CoursesModule` di array `imports`, NestJS tahu bahwa semua controller dan service yang didefinisikan di module tersebut sekarang menjadi bagian dari aplikasi.
+- Tujuan utamanya: memberi tahu Nest bahwa fitur “course” sudah resmi terdaftar dan siap dipakai.
+
 ### 4.3. `src/courses/courses.module.ts`
 
 ```typescript
@@ -117,6 +123,12 @@ import { CoursesService } from './courses.service';
 })
 export class CoursesModule {}
 ```
+
+**Penjelasan singkat:**
+
+- `CoursesModule` adalah module khusus untuk fitur **Course**.
+- Di dalamnya kamu mendeklarasikan siapa **controller**-nya (`CoursesController`) dan siapa **service**-nya (`CoursesService`).
+- Tujuan utamanya: mengelompokkan semua hal terkait Course di satu tempat, sehingga struktur project lebih rapi dan mudah dikembangkan.
 
 ### 4.4. DTO Sederhana
 
@@ -137,6 +149,12 @@ export class UpdateCourseDto {
   description?: string;
 }
 ```
+
+**Penjelasan singkat:**
+
+- DTO (`CreateCourseDto`, `UpdateCourseDto`) mendefinisikan **bentuk data** yang dikirim client ke server untuk operasi create/update Course.
+- Dengan DTO, kamu punya satu sumber kebenaran untuk struktur data yang diterima endpoint, yang nanti bisa dipakai juga untuk validasi di Step berikutnya.
+- Tujuan utamanya: memisahkan **data input** dari model internal, supaya lebih aman, jelas, dan mudah di-maintain.
 
 ---
 
@@ -207,6 +225,12 @@ export class CoursesService {
 }
 ```
 
+**Penjelasan singkat:**
+
+- `CoursesService` menyimpan **business logic** terkait Course: bagaimana data Course disimpan, dicari, diupdate, dan dihapus.
+- Saat ini data masih disimpan di **array in-memory**, tapi nanti di Step lanjutan kamu akan menggantinya dengan database tanpa perlu mengubah controller terlalu banyak.
+- Tujuan utamanya: memisahkan logika “mengelola Course” dari layer HTTP, sehingga lebih mudah di-test dan di-refactor.
+
 ---
 
 ## 6. Implementasi Controller
@@ -262,6 +286,12 @@ export class CoursesController {
   }
 }
 ```
+
+**Penjelasan singkat:**
+
+- `CoursesController` adalah **gerbang HTTP** untuk semua operasi terkait Course (`GET`, `POST`, `PATCH`, `DELETE`).
+- Ia menerima request dari client (path param, body), lalu memanggil method yang sesuai di `CoursesService`.
+- Tujuan utamanya: memetakan URL dan HTTP method ke aksi tertentu di service, sehingga struktur API kamu jelas dan terorganisir.
 
 ---
 

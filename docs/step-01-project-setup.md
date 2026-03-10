@@ -55,7 +55,7 @@ Sebelum mulai, pastikan:
 
 - **Node.js** versi terbaru LTS sudah ter-install.
 - **npm** atau **yarn** sudah siap dipakai.
-- Editor (disarankan **VSCode** atau **Cursor**).
+- Editor (disarankan **VSCode**).
 
 Cara cek Node dan npm:
 
@@ -137,6 +137,12 @@ async function bootstrap() {
 bootstrap();
 ```
 
+**Penjelasan singkat:**
+
+- File ini adalah **entry point** aplikasi NestJS kamu.
+- Fungsi `bootstrap()` membuat instance aplikasi (`NestFactory.create(AppModule)`) lalu menjalankan HTTP server di port `3000`.
+- Tujuan utamanya: menyiapkan aplikasi sekali di awal, lalu NestJS yang mengatur routing dan lifecycle selanjutnya.
+
 ### 6.2. `src/app.module.ts`
 
 ```typescript
@@ -151,6 +157,12 @@ import { AppService } from './app.service';
 })
 export class AppModule {}
 ```
+
+**Penjelasan singkat:**
+
+- `AppModule` adalah **root module** yang menjadi titik kumpul semua module lain di aplikasi.
+- Di sini kamu mendaftarkan **controller** dan **service** yang aktif di aplikasi (nanti juga module lain seperti `CoursesModule`).
+- Tujuan utamanya: memberi NestJS peta “fitur apa saja yang dimiliki aplikasi ini dan siapa yang menyediakannya”.
 
 ### 6.3. `src/app.controller.ts`
 
@@ -169,6 +181,12 @@ export class AppController {
 }
 ```
 
+**Penjelasan singkat:**
+
+- `AppController` adalah **controller** yang menangani request HTTP ke root path (`GET /`).
+- Ia menerima request dari client dan **mendelegasikan** logika bisnis ke `AppService`.
+- Tujuan utamanya: menjadi jembatan antara dunia HTTP (route, method, request) dengan world TypeScript/Service di dalam aplikasi.
+
 ### 6.4. `src/app.service.ts`
 
 ```typescript
@@ -181,6 +199,12 @@ export class AppService {
   }
 }
 ```
+
+**Penjelasan singkat:**
+
+- `AppService` adalah **service** sederhana yang menyimpan logika bisnis (dalam kasus ini hanya mengembalikan string pesan).
+- Controller memanggil method di service ini agar logika bisa dipisahkan dari layer HTTP.
+- Tujuan utamanya: menjadi tempat yang lebih tepat untuk logika aplikasi sehingga mudah di-test, di-reuse, dan di-refactor nanti.
 
 ---
 
