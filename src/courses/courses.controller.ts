@@ -21,27 +21,27 @@ export class CoursesController {
     return this.coursesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.coursesService.findOne(id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id', ParseIntPipe) id: number) {
+  //   return this.coursesService.findOne(id);
+  // }
 
-  @Post()
-  create(@Body() createCourseDto: CreateCourseDto) {
-    return this.coursesService.create(createCourseDto);
-  }
+  // @Post()
+  // create(@Body() createCourseDto: CreateCourseDto) {
+  //   return this.coursesService.create(createCourseDto);
+  // }
 
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateCourseDto: UpdateCourseDto,
-  ) {
-    return this.coursesService.update(id, updateCourseDto);
-  }
+  // @Patch(':id')
+  // update(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Body() updateCourseDto: UpdateCourseDto,
+  // ) {
+  //   return this.coursesService.update(id, updateCourseDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    this.coursesService.remove(id);
-    return { message: `Course with id ${id} deleted` };
-  }
+  // @Delete(':id')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   this.coursesService.remove(id);
+  //   return { message: `Course with id ${id} deleted` };
+  // }
 }
