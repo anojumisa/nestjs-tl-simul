@@ -156,6 +156,37 @@ export class UpdateCourseDto {
 - Dengan DTO, kamu punya satu sumber kebenaran untuk struktur data yang diterima endpoint, yang nanti bisa dipakai juga untuk validasi di Step berikutnya.
 - Tujuan utamanya: memisahkan **data input** dari model internal, supaya lebih aman, jelas, dan mudah di-maintain.
 
+### 4.5. Sekilas tentang `entities/`
+
+Di dalam folder `courses`, Nest juga menyiapkan folder `entities/`, misalnya:
+
+```text
+src/
+  courses/
+    entities/
+      course.entity.ts
+```
+
+**Apa bedanya dengan DTO?**
+
+- **DTO (`dto/`)**:
+  - Fokus ke **data yang masuk/keluar lewat API** (request & response).
+  - Dipakai di controller untuk membaca body/query/params dari client.
+  - Nanti akan kita lengkapi dengan validasi (`class-validator`).
+
+- **Entity (`entities/`)**:
+  - Mewakili **data Course di dalam aplikasi** atau di level domain.
+  - Saat kita memakai ORM (misalnya Prisma), entity ini bisa berperan sebagai:
+    - representasi model domain sendiri, atau
+    - pembungkus di atas model Prisma jika kita ingin memisahkan domain dari detail database.
+
+Untuk saat ini, `course.entity.ts` mungkin masih sangat sederhana (atau kosong), tapi:
+
+- Di step-step berikutnya, ketika kita mulai bicara soal database dan repository pattern yang lebih dalam, kamu akan melihat bagaimana:
+  - DTO menangani **input/output API**,
+  - Entity merepresentasikan **data/domain**,
+  - Repository menghubungkan entity dengan **penyimpanan data** (nantinya Prisma).
+
 ---
 
 ## 5. Implementasi Service In-Memory

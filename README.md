@@ -44,6 +44,36 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
+## Example: Create a Course with Postman
+
+Setelah service `Courses` dari Step 02 aktif, kamu bisa mencoba membuat Course baru dengan Postman:
+
+- **Method**: `POST`  
+- **URL**: `http://localhost:3000/courses`
+- **Headers**:
+  - `Content-Type: application/json`
+
+Body (pilih *raw* → *JSON*):
+
+```json
+{
+  "title": "Fundamental NestJS untuk Pemula",
+  "description": "Kelas pengantar untuk memahami konsep dasar NestJS dan membangun REST API sederhana."
+}
+```
+
+Jika implementasi in-memory mengikuti contoh di `docs/step-02-first-module-controller-service.md`, respons yang diharapkan kurang lebih:
+
+```json
+{
+  "id": 1,
+  "title": "Fundamental NestJS untuk Pemula",
+  "description": "Kelas pengantar untuk memahami konsep dasar NestJS dan membangun REST API sederhana."
+}
+```
+
+Kirim beberapa kali untuk melihat `id` bertambah, lalu cek `GET http://localhost:3000/courses` untuk memastikan semua Course tersimpan.
+
 ## Run tests
 
 ```bash
