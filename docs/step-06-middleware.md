@@ -427,7 +427,30 @@ Cara cepat (bash):
 for i in {1..40}; do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/courses; done
 ```
 
-Jika rate limit aktif, kamu juga biasanya melihat header:
+Catatan penting:
+
+- Command di atas **hanya mencetak HTTP status code** (karena memakai `-w "%{http_code}\n"`), jadi **header tidak akan terlihat**.
+- Untuk melihat header rate limit, gunakan salah satu cara ini:
+
+Header + status + body:
+
+```bash
+curl -i http://localhost:3000/courses
+```
+
+Header saja (tanpa body):
+
+```bash
+curl -s -D - -o /dev/null http://localhost:3000/courses
+```
+
+Filter header rate limit saja:
+
+```bash
+curl -s -D - -o /dev/null http://localhost:3000/courses | grep -i ratelimit
+```
+
+Jika rate limit aktif, kamu biasanya melihat header:
 
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
