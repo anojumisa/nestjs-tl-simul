@@ -279,11 +279,56 @@ Atau lewat provider Nest dengan token `APP_INTERCEPTOR` (lebih idiomatis Nest), 
 
 ---
 
-## 10. Cara Testing Interceptor
+## 10. Cara Mengecek Interceptor Sudah Terpasang (Static & Runtime)
+
+Bagian ini membantu kamu membuktikan bahwa interceptor benar-benar jalan.
+
+### 10.1. Static check (cek dari kode)
+
+Interceptor dianggap terpasang jika kamu menemukan salah satu pola ini:
+
+- **Global**: ada `app.useGlobalInterceptors(...)` di `main.ts`.
+- **Per-controller / per-route**: ada decorator `@UseInterceptors(...)` di controller atau handler.
+
+### 10.2. Runtime check (cek dari perilaku aplikasi)
+
+#### A) Cek response wrapper interceptor
+
+- Hit endpoint `GET /courses`
+- Jika wrapper aktif, response sukses akan berbentuk konsisten, misalnya:
+
+```json
+{
+  "success": true,
+  "data": [],
+  "meta": {
+    "timestamp": "...",
+    "path": "/courses",
+    "requestId": "..."
+  }
+}
+```
+
+#### B) Cek logging/timing interceptor
+
+- Hit endpoint apa pun (misalnya `GET /courses`)
+- Lihat terminal server Nest berjalan
+- Harus muncul log durasi (ms) per request.
+
+#### C) Cek konsistensi error (filter + requestId)
+
+Walaupun ini lebih fokus ke Step 08 (exception filters), kamu bisa pakai ini untuk memastikan pipeline “lengkap”:
+
+- Hit `GET /courses/abc` → harus 400 (ParseIntPipe) dan format error konsisten.
+- Perhatikan `meta.requestId` masih muncul (berarti middleware requestId juga jalan).
+
+---
+
+## 11. Cara Testing Interceptor
 
 Kamu bisa menguji interceptor dengan:
 
-### 10.1. Postman / Swagger
+### 11.1. Postman / Swagger
 
 - Jalankan server (`start:dev`).
 - Panggil endpoint seperti:
@@ -294,7 +339,7 @@ Kamu bisa menguji interceptor dengan:
   - Jika wrapper: perhatikan bentuk response jadi `{ data, meta }`.
   - Jika requestId: lihat header `X-Request-Id` dan/atau field `requestId` di response body.
 
-### 10.2. Tes manual “format response konsisten”
+### 11.2. Tes manual “format response konsisten”
 
 Bandingkan output sebelum & sesudah wrapper interceptor:
 
@@ -303,7 +348,7 @@ Bandingkan output sebelum & sesudah wrapper interceptor:
 
 ---
 
-## 11. Tugas Mandiri (Wajib)
+## 12. Tugas Mandiri (Wajib)
 
 1. **Buat `LoggingInterceptor`**
    - Log: method, path, dan durasi request (ms).
@@ -324,7 +369,7 @@ Bandingkan output sebelum & sesudah wrapper interceptor:
 
 ---
 
-## 12. Checklist Penilaian
+## 13. Checklist Penilaian
 
 Kamu dianggap **lulus Step 07** jika:
 
@@ -335,7 +380,7 @@ Kamu dianggap **lulus Step 07** jika:
 
 ---
 
-## 13. Tantangan Tambahan (Opsional)
+## 14. Tantangan Tambahan (Opsional)
 
 - **Tantangan 1 – Meta yang lebih informatif**
   - Tambahkan `meta.path`, `meta.method`, dan `meta.requestId` (jika ada) ke wrapper response.

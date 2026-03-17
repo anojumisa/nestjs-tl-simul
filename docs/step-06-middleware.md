@@ -374,6 +374,67 @@ Ini akan menambahkan middleware ke **seluruh** aplikasi.
 
 ---
 
+## 6A. Cara Mengecek Middleware Sudah Terpasang (Static & Runtime)
+
+Bagian ini membantu kamu membuktikan bahwa middleware benar-benar jalan, bukan hanya “sudah ditulis”.
+
+### 6A.1. Static check (cek dari kode)
+
+Middleware dianggap terpasang jika kamu menemukan salah satu pola ini:
+
+- **Per-module/per-route**: ada `configure(consumer)` dan `consumer.apply(...).forRoutes(...)`.
+- **Global**: ada `app.use(...)` di `main.ts`.
+
+Contoh per-module:
+
+```typescript
+consumer
+  .apply(requestIdMiddleware, loggerMiddleware, rateLimitMiddleware)
+  .forRoutes({ path: 'courses', method: RequestMethod.ALL });
+```
+
+### 6A.2. Runtime check (cek dari perilaku aplikasi)
+
+#### A) Cek `requestIdMiddleware`
+
+- Hit endpoint `GET /courses`
+- Pastikan response punya header **`X-Request-Id`**
+
+Cara cepat:
+
+```bash
+curl -i http://localhost:3000/courses
+```
+
+#### B) Cek `loggerMiddleware`
+
+- Hit endpoint `GET /courses` atau `POST /courses`
+- Lihat terminal server Nest berjalan
+- Harus muncul log method/path/status/duration, misalnya:
+
+```text
+[requestId=...] [GET] /courses → 200 (Xms)
+```
+
+#### C) Cek `rateLimitMiddleware` (demo)
+
+- Panggil endpoint yang sama berkali-kali dalam 1 menit
+- Jika melewati limit, harus dapat **429 Too Many Requests**
+
+Cara cepat (bash):
+
+```bash
+for i in {1..40}; do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/courses; done
+```
+
+Jika rate limit aktif, kamu juga biasanya melihat header:
+
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+
+---
+
 ## 7. Contoh Use Case Middleware
 
 Beberapa contoh umum:
