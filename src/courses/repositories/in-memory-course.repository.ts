@@ -16,8 +16,45 @@ export class InMemoryCourseRepository implements ICourseRepository {
         'Membahas tipe lanjutan dan praktik terbaik TypeScript di server.',
     },
   ];
+  private nextId = 3;
 
-  findAll(): Promise<CourseModel[]> {
-    return Promise.resolve(this.courses);
+  async findAll(): Promise<CourseModel[]> {
+    return this.courses;
+  }
+
+  async findOne(id: number): Promise<CourseModel | null> {
+    const course = this.courses.find((c) => c.id === id);
+    return course ?? null;
+  }
+
+  async create(data: Omit<CourseModel, 'id'>): Promise<CourseModel> {
+    const newCourse: CourseModel = {
+      id: this.nextId++,
+      title: data.title,
+      description: data.description,
+    };
+    this.courses.push(newCourse);
+    return newCourse;
+  }
+
+  async update(
+    id: number,
+    data: Partial<Omit<CourseModel, 'id'>>,
+  ): Promise<CourseModel | null> {
+    const existing = this.courses.find((c) => c.id === id);
+    if (!existing) return null;
+
+    if (typeof data.title === 'string') existing.title = data.title;
+    if (typeof data.description === 'string')
+      existing.description = data.description;
+
+    return existing;
+  }
+
+  async remove(id: number): Promise<boolean> {
+    const index = this.courses.findIndex((c) => c.id === id);
+    if (index === -1) return false;
+    this.courses.splice(index, 1);
+    return true;
   }
 }
