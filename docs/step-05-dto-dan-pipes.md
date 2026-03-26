@@ -601,7 +601,7 @@ Beberapa alasan banyak developer suka Zod:
   - Banyak contoh di internet,
   - Integrasinya “tinggal pakai” lewat `ValidationPipe`.
 
-Zod lebih cocok sebagai **topik lanjutan** setelah mahasiswa nyaman dengan konsep DTO & Pipes.
+Zod lebih cocok sebagai **topik lanjutan** setelah student nyaman dengan konsep DTO & Pipes.
 
 ---
 
@@ -676,7 +676,7 @@ Tidak.
     - Menghindari decorator-style,
     - Atau membangun arsitektur yang sangat schema-driven.
 
-Yang penting mahasiswa pahami:
+Yang penting student pahami:
 
 - **Konsep** validasi & schema-nya (apa yang dicek, kenapa perlu),
 - Bukan sekadar “pakai library mana”.

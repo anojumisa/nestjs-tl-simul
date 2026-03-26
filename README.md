@@ -2,127 +2,254 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# nestjs-demo — Learning Platform API (NestJS)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–09) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, hingga middleware, interceptor, exception filter, dan dependency injection.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Apa yang ada di repository ini?
 
-## Project setup
+| Bagian | Isi |
+|--------|-----|
+| **`docs/`** | Panduan langkah demi langkah (Bahasa Indonesia): konsep, tugas, checklist. |
+| **`src/`** | Aplikasi NestJS: modul `courses`, middleware, interceptor, filter, DTO, repository in-memory. |
+| **`test/`** | Tes bawaan template Nest (unit / e2e). |
+| **`package.json`** | Script (`start`, `build`, `test`) dan dependency (Nest, Swagger, class-validator, dll.). |
+
+**Domain contoh:** *Learning Platform API* — resource **Course** (CRUD) sebagai tulang punggung untuk menjelaskan arsitektur Nest.
+
+---
+
+## Apa yang sudah terimplementasi di kode?
+
+Secara garis besar, codebase ini memuat **satu alur API lengkap** untuk fitur Course, plus **cross-cutting concerns** yang biasa dipakai di API production:
+
+- **Module / Controller / Service** — routing HTTP dan business logic.
+- **Repository pattern** — `ICourseRepository` + implementasi in-memory; binding lewat token `COURSE_REPOSITORY` (siap diganti Prisma nanti).
+- **DTO + ValidationPipe** — validasi body dengan `class-validator`.
+- **Swagger** — dokumentasi interaktif di `/docs`.
+- **Middleware** — `X-Request-Id`, logging, rate limiting (demo) untuk route `/courses`.
+- **Interceptors** — logging durasi + **response wrapper** sukses (`success`, `data`, `meta`).
+- **Exception filter** — format error konsisten (`success: false`, `error`, `meta`).
+- **Dependency injection** — constructor injection + custom provider token; **demo swap repository** lewat env `COURSE_REPOSITORY_IMPL=demo-seed` + **`GET /learning/di`** (lihat Step 09 dan `src/courses/learning/`).
+
+Detail teori dan latihan ada di masing-masing file `docs/step-*.md`.
+
+---
+
+## Prasyarat
+
+- **Node.js** (disarankan LTS).
+- **pnpm** (repo ini memakai `pnpm-lock.yaml`; bisa juga `npm`/`yarn` jika kamu sesuaikan sendiri).
+
+Cek versi:
 
 ```bash
-$ pnpm install
+node -v
+pnpm -v
 ```
 
-## Compile and run the project
+---
+
+## Cara menjalankan project
+
+Install dependency:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Example: Create a Course with Postman
+Jalankan server (watch mode, cocok untuk development):
 
-Setelah service `Courses` dari Step 02 aktif, kamu bisa mencoba membuat Course baru dengan Postman:
+```bash
+pnpm run start:dev
+```
 
-- **Method**: `POST`  
-- **URL**: `http://localhost:3000/courses`
-- **Headers**:
-  - `Content-Type: application/json`
+Default: **`http://localhost:3000`**. Port bisa diubah lewat environment variable **`PORT`**.
 
-Body (pilih *raw* → *JSON*):
+Build production:
+
+```bash
+pnpm run build
+pnpm run start:prod
+```
+
+---
+
+## Quick deploy checklist (Railway / Render)
+
+Panduan lengkap ada di `docs/step-10-simple-deployment-railway-render.md`. Untuk checklist super cepat:
+
+- **Pastikan repo sudah di-push ke GitHub**
+- **Build command**: `pnpm run build`
+- **Start command**: `pnpm run start:prod`
+- **Wajib**: platform harus expose `PORT` (kode kita sudah pakai `process.env.PORT`)
+- **Verifikasi setelah deploy**:
+  - `GET /`
+  - `GET /courses`
+  - `GET /docs`
+  - `GET /learning/di`
+- **Opsional (demo DI)**: set env `COURSE_REPOSITORY_IMPL=demo-seed`, redeploy, lalu `GET /courses` lagi
+
+---
+
+## Struktur `src/` (ringkas)
+
+```
+src/
+  main.ts                 # Bootstrap app: ValidationPipe, Swagger, interceptors, exception filter
+  app.module.ts           # Root module
+  app.controller.ts       # GET / (pesan sambutan API)
+  app.service.ts
+  common/
+    middleware/           # request id, logger, rate limit (demo)
+    interceptors/         # logging, wrap response sukses
+    filters/              # format error global
+  courses/
+    courses.module.ts     # Registrasi middleware untuk /courses + binding DI repository
+    courses.controller.ts
+    courses.service.ts
+    learning/             # Contoh DI untuk demo kelas (anti-pola vs repo alternatif, GET /learning/di)
+    dto/                  # CreateCourseDto, UpdateCourseDto (+ validasi)
+    entities/             # Course (domain sederhana)
+    repositories/         # Interface + InMemoryCourseRepository
+```
+
+---
+
+## Learning journey (urutan materi di `docs/`)
+
+Ikuti urutan ini saat belajar atau mengajar:
+
+| Step | Topik | Dokumen |
+|------|--------|---------|
+| 01 | Setup project & kenalan NestJS | [docs/step-01-project-setup.md](docs/step-01-project-setup.md) |
+| 02 | Module, controller, service (Course) | [docs/step-02-first-module-controller-service.md](docs/step-02-first-module-controller-service.md) |
+| 03 | Repository pattern (lanjutan) | [docs/step-03-advanced-repository-pattern.md](docs/step-03-advanced-repository-pattern.md) |
+| 04 | Dokumentasi API (Postman & Swagger) | [docs/step-04-api-documentation-dengan-postman-dan-swagger.md](docs/step-04-api-documentation-dengan-postman-dan-swagger.md) |
+| 05 | DTO & pipes (validasi) | [docs/step-05-dto-dan-pipes.md](docs/step-05-dto-dan-pipes.md) |
+| 06 | Middleware | [docs/step-06-middleware.md](docs/step-06-middleware.md) |
+| 07 | Interceptors | [docs/step-07-interceptors.md](docs/step-07-interceptors.md) |
+| 08 | Exception filters | [docs/step-08-exception-filters.md](docs/step-08-exception-filters.md) |
+| 09 | Dependency injection | [docs/step-09-dependency-injection.md](docs/step-09-dependency-injection.md) |
+| 10 | Simple deployment (Railway & Render) | [docs/step-10-simple-deployment-railway-render.md](docs/step-10-simple-deployment-railway-render.md) |
+
+---
+
+## Endpoint utama (Course)
+
+Base URL: `http://localhost:3000`
+
+| Method | Path | Keterangan |
+|--------|------|------------|
+| GET | `/` | Pesan sambutan API |
+| GET | `/courses` | Daftar course (ada data dummy di repository) |
+| GET | `/courses/:id` | Satu course (`id` angka — `ParseIntPipe`) |
+| POST | `/courses` | Buat course (body JSON, divalidasi DTO) |
+| PATCH | `/courses/:id` | Update course |
+| DELETE | `/courses/:id` | Hapus course |
+| GET | `/learning/di` | Info showcase Dependency Injection (binding aktif, path file contoh, langkah demo) |
+
+**Swagger UI:** [http://localhost:3000/docs](http://localhost:3000/docs) — coba endpoint langsung dari browser.
+
+**Demo DI (ganti repository tanpa mengubah `CoursesService`):** set environment variable **`COURSE_REPOSITORY_IMPL=demo-seed`**, restart server, lalu `GET /courses` — data dummy berubah (lihat penjelasan di `GET /learning/di`).
+
+---
+
+## Format response (penting untuk demo)
+
+### Response sukses (dibungkus interceptor)
 
 ```json
 {
-  "title": "Fundamental NestJS untuk Pemula",
-  "description": "Kelas pengantar untuk memahami konsep dasar NestJS dan membangun REST API sederhana."
+  "success": true,
+  "data": { },
+  "meta": {
+    "timestamp": "2026-03-17T12:00:00.000Z",
+    "path": "/courses",
+    "requestId": "uuid-atau-string"
+  }
 }
 ```
 
-Jika implementasi in-memory mengikuti contoh di `docs/step-02-first-module-controller-service.md`, respons yang diharapkan kurang lebih:
+Header **`X-Request-Id`** juga diset oleh middleware (untuk korelasi log).
+
+### Response error (dibungkus exception filter)
 
 ```json
 {
-  "id": 1,
-  "title": "Fundamental NestJS untuk Pemula",
-  "description": "Kelas pengantar untuk memahami konsep dasar NestJS dan membangun REST API sederhana."
+  "success": false,
+  "error": {
+    "statusCode": 400,
+    "message": ["..."],
+    "details": { }
+  },
+  "meta": {
+    "timestamp": "...",
+    "path": "/courses",
+    "requestId": "..."
+  }
 }
 ```
 
-Kirim beberapa kali untuk melihat `id` bertambah, lalu cek `GET http://localhost:3000/courses` untuk memastikan semua Course tersimpan.
+---
 
-## Run tests
+## Contoh cepat dengan `curl`
 
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**GET semua course**
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+curl -s http://localhost:3000/courses | jq .
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Showcase Dependency Injection (mentor)**
 
-## Resources
+```bash
+curl -s http://localhost:3000/learning/di | jq .
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+**Jalankan dengan repository demo alternatif** (setelah stop instance server yang sedang jalan):
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+COURSE_REPOSITORY_IMPL=demo-seed pnpm run start:dev
+```
 
-## Support
+**POST course baru**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+curl -s -X POST http://localhost:3000/courses \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Fundamental NestJS untuk Pemula","description":"Kelas pengantar untuk memahami dasar NestJS dan REST API."}' | jq .
+```
 
-## Stay in touch
+**Lihat header (termasuk `X-Request-Id` dan rate limit jika sudah lewat request ke-2 dalam window)**
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+curl -i http://localhost:3000/courses
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Tes otomatis
+
+```bash
+pnpm run test
+pnpm run test:e2e
+pnpm run test:cov
+```
+
+> Catatan: di beberapa environment, `jest` bisa bergantung pada watchman. Jika ada error terkait watchman, jalankan tes dengan opsi yang menonaktifkan watch atau perbaiki konfigurasi environment lokal.
+
+---
+
+## Referensi NestJS (di luar materi mentoring)
+
+- [Dokumentasi resmi NestJS](https://docs.nestjs.com)
+- [Repositori NestJS di GitHub](https://github.com/nestjs/nest)
+
+---
+
+## Lisensi
+
+NestJS dilisensikan MIT — lihat [LICENSE NestJS](https://github.com/nestjs/nest/blob/master/LICENSE). Isi repo pembelajaran ini mengikuti keperluan proyek lokal Anda; sesuaikan lisensi jika didistribusikan terpisah.
