@@ -134,6 +134,8 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 08 | Exception filters | [docs/step-08-exception-filters.md](docs/step-08-exception-filters.md) |
 | 09 | Dependency injection | [docs/step-09-dependency-injection.md](docs/step-09-dependency-injection.md) |
 | 10 | Simple deployment (Railway & Render) | [docs/step-10-simple-deployment-railway-render.md](docs/step-10-simple-deployment-railway-render.md) |
+| 11 | Database fundamental (DBRMS) | [docs/step-11-database-dbrms-fundamental.md](docs/step-11-database-dbrms-fundamental.md) |
+| 12 | SQL fundamental (DDL, CRUD, JOIN, transaction) | [docs/step-12-sql-fundamental.md](docs/step-12-sql-fundamental.md) |
 
 ---
 
