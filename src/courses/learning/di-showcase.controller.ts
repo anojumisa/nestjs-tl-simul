@@ -3,13 +3,18 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 function resolveRepositoryBinding(): {
   envRaw: string | undefined;
-  activeRepository: 'InMemoryCourseRepository' | 'DemoSeedCourseRepository';
+  activeRepository:
+    | 'InMemoryCourseRepository'
+    | 'DemoSeedCourseRepository'
+    | 'PostgresCourseRepository';
 } {
   const normalized = process.env.COURSE_REPOSITORY_IMPL?.toLowerCase().trim();
   const activeRepository =
     normalized === 'demo-seed'
       ? 'DemoSeedCourseRepository'
-      : 'InMemoryCourseRepository';
+      : normalized === 'postgres'
+        ? 'PostgresCourseRepository'
+        : 'InMemoryCourseRepository';
 
   return {
     envRaw: process.env.COURSE_REPOSITORY_IMPL,
@@ -39,26 +44,32 @@ export class DiShowcaseController {
         variable: 'COURSE_REPOSITORY_IMPL',
         currentValue: envRaw ?? null,
         notes:
-          'Kosong atau selain demo-seed → InMemoryCourseRepository. Nilai demo-seed → DemoSeedCourseRepository.',
+          'Kosong/selain demo-seed/postgres → InMemoryCourseRepository. Nilai demo-seed → DemoSeedCourseRepository. Nilai postgres → PostgresCourseRepository.',
       },
       activeBinding: {
         implementationClass: activeRepository,
         compareGetCourses:
           activeRepository === 'DemoSeedCourseRepository'
             ? 'Response berisi judul berawalan [Showcase DI] (id 201–202).'
-            : 'Response berisi data dummy standar (id 1–2 + data yang kamu buat lewat POST).',
+            : activeRepository === 'PostgresCourseRepository'
+              ? 'Response berisi data dari tabel `courses` di PostgreSQL.'
+              : 'Response berisi data dummy standar (id 1–2 + data yang kamu buat lewat POST).',
       },
       codePaths: {
         serviceWithInjection: 'src/courses/courses.service.ts',
         moduleWiring: 'src/courses/courses.module.ts',
-        withoutDiIllustration: 'src/courses/learning/courses.service.without-di.example.ts',
-        alternativeRepository: 'src/courses/learning/demo-seed-course.repository.ts',
+        withoutDiIllustration:
+          'src/courses/learning/courses.service.without-di.example.ts',
+        alternativeRepository:
+          'src/courses/learning/demo-seed-course.repository.ts',
       },
       demoSteps: [
         'Baca courses.service.ts vs learning/courses.service.without-di.example.ts (polusi `new`).',
         'GET /learning/di lalu GET /courses — catat isi data.',
         'Stop server; jalankan: COURSE_REPOSITORY_IMPL=demo-seed pnpm run start:dev',
         'GET /courses lagi — CoursesService sama, data dari repository demo.',
+        'Stop server; jalankan: COURSE_REPOSITORY_IMPL=postgres pnpm run start:dev',
+        'Pastikan DB sudah siap (migrations + seed), lalu GET /courses untuk melihat data dari PostgreSQL.',
       ],
     };
   }

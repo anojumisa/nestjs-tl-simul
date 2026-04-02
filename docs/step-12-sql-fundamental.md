@@ -328,6 +328,7 @@ Kamu dianggap **lulus Step 12** jika:
 
 Setelah SQL fundamental:
 
+- Lanjut ke `docs/step-13-advanced-sql-query-and-performance.md`,
 - Integrasi **Prisma + PostgreSQL**,
 - Mapping schema ke model ORM,
 - Implementasi repository nyata (`PrismaCourseRepository`) di NestJS.
