@@ -4,7 +4,7 @@
 
 # nestjs-demo — Learning Platform API (NestJS)
 
-Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–09) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, hingga middleware, interceptor, exception filter, dan dependency injection.
+Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–14) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, middleware, interceptor, exception filter, dependency injection, sampai integrasi PostgreSQL dengan raw SQL.
 
 ---
 
@@ -13,7 +13,7 @@ Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API d
 | Bagian | Isi |
 |--------|-----|
 | **`docs/`** | Panduan langkah demi langkah (Bahasa Indonesia): konsep, tugas, checklist. |
-| **`src/`** | Aplikasi NestJS: modul `courses`, middleware, interceptor, filter, DTO, repository in-memory. |
+| **`src/`** | Aplikasi NestJS: modul `courses`, middleware, interceptor, filter, DTO, repository in-memory + PostgreSQL (raw SQL). |
 | **`test/`** | Tes bawaan template Nest (unit / e2e). |
 | **`package.json`** | Script (`start`, `build`, `test`) dan dependency (Nest, Swagger, class-validator, dll.). |
 
@@ -26,13 +26,13 @@ Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API d
 Secara garis besar, codebase ini memuat **satu alur API lengkap** untuk fitur Course, plus **cross-cutting concerns** yang biasa dipakai di API production:
 
 - **Module / Controller / Service** — routing HTTP dan business logic.
-- **Repository pattern** — `ICourseRepository` + implementasi in-memory; binding lewat token `COURSE_REPOSITORY` (siap diganti Prisma nanti).
+- **Repository pattern** — `ICourseRepository` + implementasi `InMemory`, `DemoSeed`, dan `PostgreSQL` (raw SQL) lewat token `COURSE_REPOSITORY`.
 - **DTO + ValidationPipe** — validasi body dengan `class-validator`.
 - **Swagger** — dokumentasi interaktif di `/docs`.
 - **Middleware** — `X-Request-Id`, logging, rate limiting (demo) untuk route `/courses`.
 - **Interceptors** — logging durasi + **response wrapper** sukses (`success`, `data`, `meta`).
 - **Exception filter** — format error konsisten (`success: false`, `error`, `meta`).
-- **Dependency injection** — constructor injection + custom provider token; **demo swap repository** lewat env `COURSE_REPOSITORY_IMPL=demo-seed` + **`GET /learning/di`** (lihat Step 09 dan `src/courses/learning/`).
+- **Dependency injection** — constructor injection + custom provider token; **demo swap repository** lewat env `COURSE_REPOSITORY_IMPL=demo-seed|postgres` + **`GET /learning/di`** (lihat Step 09 dan `src/courses/learning/`).
 
 Detail teori dan latihan ada di masing-masing file `docs/step-*.md`.
 
@@ -67,6 +67,38 @@ pnpm run start:dev
 ```
 
 Default: **`http://localhost:3000`**. Port bisa diubah lewat environment variable **`PORT`**.
+
+### Menjalankan mode PostgreSQL (Step 14)
+
+1. Buat file env:
+
+```bash
+cp .env.example .env
+```
+
+2. Isi minimal:
+
+- `COURSE_REPOSITORY_IMPL=postgres`
+- `DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/learning_platform`
+  - atau pakai `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
+
+3. Jalankan migration + seed:
+
+- `docs/sql/migrations/step-14-0001_create_courses_table.sql`
+- `docs/sql/seeds/step-14-0002_seed_courses.sql`
+
+4. Start server:
+
+```bash
+pnpm run start:dev
+```
+
+5. Verifikasi:
+
+```bash
+curl -s http://localhost:3000/learning/di | jq .
+curl -s http://localhost:3000/courses | jq .
+```
 
 Build production:
 
@@ -136,6 +168,8 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 10 | Simple deployment (Railway & Render) | [docs/step-10-simple-deployment-railway-render.md](docs/step-10-simple-deployment-railway-render.md) |
 | 11 | Database fundamental (DBRMS) | [docs/step-11-database-dbrms-fundamental.md](docs/step-11-database-dbrms-fundamental.md) |
 | 12 | SQL fundamental (DDL, CRUD, JOIN, transaction) | [docs/step-12-sql-fundamental.md](docs/step-12-sql-fundamental.md) |
+| 13 | Advanced SQL (JOIN lanjutan, UNION, subquery, indexing) | [docs/step-13-advanced-sql-query-and-performance.md](docs/step-13-advanced-sql-query-and-performance.md) |
+| 14 | Integrasi PostgreSQL ke NestJS (raw CRUD, migrations, seeding) | [docs/step-14-nestjs-database-integration-crud-raw-migrations-seeding.md](docs/step-14-nestjs-database-integration-crud-raw-migrations-seeding.md) |
 
 ---
 
@@ -146,7 +180,7 @@ Base URL: `http://localhost:3000`
 | Method | Path | Keterangan |
 |--------|------|------------|
 | GET | `/` | Pesan sambutan API |
-| GET | `/courses` | Daftar course (ada data dummy di repository) |
+| GET | `/courses` | Daftar course (sumber data mengikuti repository binding aktif) |
 | GET | `/courses/:id` | Satu course (`id` angka — `ParseIntPipe`) |
 | POST | `/courses` | Buat course (body JSON, divalidasi DTO) |
 | PATCH | `/courses/:id` | Update course |
@@ -155,7 +189,7 @@ Base URL: `http://localhost:3000`
 
 **Swagger UI:** [http://localhost:3000/docs](http://localhost:3000/docs) — coba endpoint langsung dari browser.
 
-**Demo DI (ganti repository tanpa mengubah `CoursesService`):** set environment variable **`COURSE_REPOSITORY_IMPL=demo-seed`**, restart server, lalu `GET /courses` — data dummy berubah (lihat penjelasan di `GET /learning/di`).
+**Demo DI (ganti repository tanpa mengubah `CoursesService`):** set environment variable **`COURSE_REPOSITORY_IMPL=demo-seed`** atau **`COURSE_REPOSITORY_IMPL=postgres`**, restart server, lalu `GET /courses` — sumber data akan mengikuti binding aktif (lihat penjelasan di `GET /learning/di`).
 
 ---
 
@@ -224,6 +258,10 @@ curl -s -X POST http://localhost:3000/courses \
   -H "Content-Type: application/json" \
   -d '{"title":"Fundamental NestJS untuk Pemula","description":"Kelas pengantar untuk memahami dasar NestJS dan REST API."}' | jq .
 ```
+
+**Panduan lengkap CRUD verifikasi Step 14**
+
+- Lihat `docs/step-14-curl-examples.md`
 
 **Lihat header (termasuk `X-Request-Id` dan rate limit jika sudah lewat request ke-2 dalam window)**
 

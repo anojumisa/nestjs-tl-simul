@@ -25,6 +25,26 @@ Untuk integrasi database, kita menambahkan implementasi baru:
 - `PostgresCourseRepository` (implementasi `ICourseRepository`)
 - yang menjalankan query via `pg` (node-postgres) / raw SQL
 
+Diagram alur request sampai ke database:
+
+```mermaid
+flowchart LR
+  A[HTTP Request<br/>GET/POST/PATCH/DELETE /courses]
+  B[CoursesController]
+  C[CoursesService<br/>@Inject COURSE_REPOSITORY]
+  D[CoursesModule Provider Factory<br/>cek COURSE_REPOSITORY_IMPL]
+  E[PostgresCourseRepository]
+  F[pg Pool]
+  G[(PostgreSQL)]
+  H[DemoSeedCourseRepository]
+  I[InMemoryCourseRepository]
+
+  A --> B --> C --> D
+  D -->|postgres| E --> F --> G
+  D -->|demo-seed| H
+  D -->|default| I
+```
+
 ---
 
 ## 3. Setup PostgreSQL
@@ -74,12 +94,12 @@ Catatan:
 
 ---
 
-## 3.2 Setup environment variables dengan `.env` (wajib untuk DB)
+## 3.2 Setup environment variables dengan `.env` (wajib untuk database)
 
 Di repo ini, kita pakai `process.env` untuk:
 
 - memilih repository implementation (`COURSE_REPOSITORY_IMPL`)
-- membaca konfigurasi koneksi DB (`DATABASE_URL` atau `PG*`)
+- membaca konfigurasi koneksi database (`DATABASE_URL` atau `PG*`)
 - set port (`PORT`)
 
 Supaya local development rapi, kita gunakan **file `.env`**.
@@ -123,12 +143,74 @@ Catatan:
 
 ---
 
+## 3.3 Pool setup (koneksi database yang dipakai aplikasi)
+
+Di integrasi ini kita memakai `Pool` dari package `pg`, bukan single connection.
+
+Kenapa pakai pool?
+
+- Reuse koneksi antar request (lebih efisien).
+- Hindari overhead buka/tutup koneksi setiap query.
+- Lebih aman untuk request concurrent.
+- Bisa graceful shutdown saat app berhenti.
+
+### 3.3.1 Cara pool dibentuk di project ini
+
+Di `src/courses/courses.module.ts`, saat `COURSE_REPOSITORY_IMPL=postgres`:
+
+1. App cek `DATABASE_URL`.
+2. Jika ada, pool dibuat dari `connectionString`.
+3. Jika tidak ada, pool dibuat dari env terpisah: `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`.
+4. Pool diinject ke `PostgresCourseRepository`.
+
+Contoh pola:
+
+```ts
+const databaseUrl = process.env.DATABASE_URL;
+
+const pool =
+  databaseUrl && databaseUrl.length > 0
+    ? new Pool({ connectionString: databaseUrl })
+    : new Pool({
+        host: process.env.PGHOST,
+        port: process.env.PGPORT ? Number(process.env.PGPORT) : 5432,
+        user: process.env.PGUSER,
+        password: process.env.PGPASSWORD,
+        database: process.env.PGDATABASE,
+      });
+```
+
+### 3.3.2 Validasi konfigurasi minimum
+
+Jika `DATABASE_URL` kosong, minimal pastikan:
+
+- `PGHOST`
+- `PGUSER`
+- `PGDATABASE`
+- `PGPASSWORD` sesuai user database
+
+Tanpa konfigurasi ini, aplikasi akan gagal start di mode `postgres`.
+
+### 3.3.3 Lifecycle koneksi
+
+Di `PostgresCourseRepository`, pool ditutup saat module shutdown dengan `onModuleDestroy()`:
+
+```ts
+async onModuleDestroy() {
+  await this.pool.end();
+}
+```
+
+Ini mencegah koneksi menggantung saat app stop/restart.
+
+---
+
 ## 4. Install dependency (raw SQL)
 
 Kalau kamu pilih pendekatan raw queries via `pg`, install:
 
 - `pg` (PostgreSQL driver)
-- (opsional) `dotenv` jika kamu ingin membaca file `.env`
+- `@nestjs/config` untuk memuat `.env` lewat `ConfigModule.forRoot(...)`
 
 Catatan: Step ini fokus konsep + wiring. Kalau kamu sudah punya mekanisme env sendiri, cukup sesuaikan.
 
@@ -216,7 +298,7 @@ Lalu jalankan:
 
 ---
 
-## 7. Mengaktifkan Postgres repository lewat env
+## 7. Mengaktifkan PostgreSQL repository lewat env
 
 Di `CoursesModule`, buat binding baru misalnya:
 
@@ -244,7 +326,7 @@ Setelah ini:
    - `POST /courses`
    - `PATCH /courses/:id`
    - `DELETE /courses/:id`
-   bekerja dan perubahan terlihat langsung di database.
+     bekerja dan perubahan terlihat langsung di database.
 
 ---
 
@@ -261,4 +343,3 @@ Setelah ini:
 
 - Integrasi relasi tabel (misal `lessons`, `enrollments`) agar JOIN benar-benar tercermin di endpoint.
 - Implementasi query lanjutan (pagination, sorting, filtering) lewat raw SQL.
-

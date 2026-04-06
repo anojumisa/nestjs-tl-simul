@@ -144,7 +144,7 @@ VALUES
 
 ## 7. SELECT dasar (read data)
 
-### 6.1. Ambil semua data
+### 7.1. Ambil semua data
 
 ```sql
 SELECT id, title, description
@@ -152,7 +152,7 @@ FROM courses
 ORDER BY id DESC;
 ```
 
-### 6.2. Filter data
+### 7.2. Filter data
 
 ```sql
 SELECT id, title
@@ -160,7 +160,7 @@ FROM courses
 WHERE title ILIKE '%nestjs%';
 ```
 
-### 6.3. Pagination sederhana
+### 7.3. Pagination sederhana
 
 ```sql
 SELECT id, title
@@ -173,7 +173,7 @@ LIMIT 10 OFFSET 0;
 
 ## 8. UPDATE dan DELETE
 
-### 7.1. UPDATE
+### 8.1. UPDATE
 
 ```sql
 UPDATE courses
@@ -182,7 +182,7 @@ SET title = 'Fundamental NestJS (Updated)',
 WHERE id = 1;
 ```
 
-### 7.2. DELETE
+### 8.2. DELETE
 
 ```sql
 DELETE FROM courses
@@ -195,7 +195,7 @@ Jika table terkait menggunakan `ON DELETE CASCADE`, data child akan ikut terhapu
 
 ## 9. JOIN (sangat penting untuk backend API)
 
-### 8.1. JOIN course dengan lesson
+### 9.1. JOIN course dengan lesson
 
 ```sql
 SELECT
@@ -209,7 +209,7 @@ JOIN lessons l ON l.course_id = c.id
 ORDER BY c.id, l.position;
 ```
 
-### 8.2. JOIN enrollment (student ikut course apa)
+### 9.2. JOIN enrollment (student ikut course apa)
 
 ```sql
 SELECT
@@ -227,7 +227,7 @@ ORDER BY e.enrolled_at DESC;
 
 ## 10. Aggregate query (count, grouping)
 
-### 9.1. Jumlah lesson per course
+### 10.1. Jumlah lesson per course
 
 ```sql
 SELECT
@@ -240,7 +240,7 @@ GROUP BY c.id, c.title
 ORDER BY total_lessons DESC;
 ```
 
-### 9.2. Jumlah student per course
+### 10.2. Jumlah student per course
 
 ```sql
 SELECT
@@ -329,7 +329,6 @@ Kamu dianggap **lulus Step 12** jika:
 Setelah SQL fundamental:
 
 - Lanjut ke `docs/step-13-advanced-sql-query-and-performance.md`,
-- Integrasi **Prisma + PostgreSQL**,
-- Mapping schema ke model ORM,
-- Implementasi repository nyata (`PrismaCourseRepository`) di NestJS.
+- Lanjut praktik SQL lanjutan via `docs/sql/step-13-advanced-sql-exercises.sql`,
+- Integrasi PostgreSQL ke NestJS dengan raw SQL repository di Step 14.
 

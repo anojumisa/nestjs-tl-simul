@@ -91,14 +91,24 @@ curl -s -X DELETE http://localhost:3000/courses/1 | jq
 
 Respon yang diharapkan:
 ```json
-{ "message": "Course with id 1 deleted" }
+{
+  "success": true,
+  "data": {
+    "message": "Course with id 1 deleted"
+  },
+  "meta": {
+    "timestamp": "2026-01-01T00:00:00.000Z",
+    "path": "/courses/1",
+    "requestId": "generated-request-id"
+  }
+}
 ```
 
 ---
 
 ## 5. Validasi cepat di database
 
-Setelah setiap operasi (create/update/delete), kamu bisa cek langsung di DB:
+Setelah setiap operasi (create/update/delete), kamu bisa cek langsung di database:
 
 ```sql
 SELECT id, title, description, created_at, updated_at
