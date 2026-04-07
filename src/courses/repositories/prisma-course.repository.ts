@@ -26,6 +26,12 @@ export class PrismaCourseRepository implements ICourseRepository {
   }
 
   async findAll(query?: CourseListQuery): Promise<CourseListResult> {
+    // Prisma version of list endpoint with filter/sort/pagination.
+    // SQL equivalent (parameterized):
+    // SELECT id, title, description FROM courses
+    // WHERE title ILIKE $1
+    // ORDER BY title ASC
+    // LIMIT $2 OFFSET $3;
     const usePaging = query?.page != null || query?.limit != null;
     const page = Math.max(1, query?.page ?? 1);
     const limit = Math.min(100, Math.max(1, query?.limit ?? 20));
@@ -33,6 +39,9 @@ export class PrismaCourseRepository implements ICourseRepository {
     const order = query?.order === 'desc' ? 'desc' : 'asc';
 
     const q = query?.q?.trim();
+    // ORM syntax note:
+    // - `where` = WHERE clause
+    // - `contains` + `mode: 'insensitive'` ~= ILIKE '%keyword%'
     const where: Prisma.CourseWhereInput | undefined = q
       ? { title: { contains: q, mode: 'insensitive' } }
       : undefined;
@@ -59,8 +68,14 @@ export class PrismaCourseRepository implements ICourseRepository {
     id: number,
     options?: { includeLessons?: boolean },
   ): Promise<CourseModel | null> {
+    // SQL equivalent:
+    // SELECT id, title, description FROM courses WHERE id = $1;
+    // If includeLessons=true, then:
+    // SELECT id, course_id, title, sort_order FROM lessons
+    // WHERE course_id = $1 ORDER BY sort_order ASC, id ASC;
     const course = await this.prisma.course.findUnique({
       where: { id },
+      // `include` tells Prisma to eager-load relation data (JOIN-like behavior).
       include: options?.includeLessons
         ? { lessons: { orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] } }
         : undefined,
@@ -90,7 +105,13 @@ export class PrismaCourseRepository implements ICourseRepository {
     return base;
   }
 
-  async create(data: Omit<CourseModel, 'id' | 'lessons'>): Promise<CourseModel> {
+  async create(
+    data: Omit<CourseModel, 'id' | 'lessons'>,
+  ): Promise<CourseModel> {
+    // SQL equivalent:
+    // INSERT INTO courses (title, description)
+    // VALUES ($1, $2)
+    // RETURNING id, title, description;
     const created = await this.prisma.course.create({
       data: {
         title: data.title,
@@ -105,6 +126,13 @@ export class PrismaCourseRepository implements ICourseRepository {
     id: number,
     data: Partial<Omit<CourseModel, 'id' | 'lessons'>>,
   ): Promise<CourseModel | null> {
+    // SQL equivalent:
+    // UPDATE courses
+    // SET title = $1, description = $2, updated_at = NOW()
+    // WHERE id = $3
+    // RETURNING id, title, description;
+    //
+    // We check existence first to keep repository contract: return null if not found.
     const existing = await this.prisma.course.findUnique({
       where: { id },
     });
@@ -124,6 +152,8 @@ export class PrismaCourseRepository implements ICourseRepository {
   }
 
   async remove(id: number): Promise<boolean> {
+    // SQL equivalent:
+    // DELETE FROM courses WHERE id = $1 RETURNING id;
     const existing = await this.prisma.course.findUnique({
       where: { id },
       select: { id: true },
@@ -138,6 +168,11 @@ export class PrismaCourseRepository implements ICourseRepository {
   }
 
   async findLessonsByCourseId(courseId: number): Promise<LessonModel[]> {
+    // SQL equivalent:
+    // SELECT id, course_id, title, sort_order
+    // FROM lessons
+    // WHERE course_id = $1
+    // ORDER BY sort_order ASC, id ASC;
     const rows = await this.prisma.lesson.findMany({
       where: { courseId },
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
@@ -154,6 +189,12 @@ export class PrismaCourseRepository implements ICourseRepository {
     courseId: number,
     data: Pick<LessonModel, 'title' | 'sortOrder'>,
   ): Promise<LessonModel | null> {
+    // SQL equivalent:
+    // INSERT INTO lessons (course_id, title, sort_order)
+    // VALUES ($1, $2, $3)
+    // RETURNING id, course_id, title, sort_order;
+    //
+    // We explicitly check parent course first for clearer "not found" behavior.
     const exists = await this.prisma.course.findUnique({
       where: { id: courseId },
       select: { id: true },
@@ -177,6 +218,10 @@ export class PrismaCourseRepository implements ICourseRepository {
   }
 
   async removeLesson(courseId: number, lessonId: number): Promise<boolean> {
+    // SQL equivalent:
+    // DELETE FROM lessons
+    // WHERE id = $1 AND course_id = $2
+    // RETURNING id;
     const result = await this.prisma.lesson.deleteMany({
       where: { id: lessonId, courseId },
     });

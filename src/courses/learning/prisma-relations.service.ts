@@ -9,6 +9,10 @@ export class PrismaRelationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createUserWithProfile(dto: CreateUserWithProfileDto) {
+    // 1:1 (User <-> UserProfile) via nested create in one Prisma call.
+    // SQL equivalent (inside a transaction):
+    // INSERT INTO users (email) VALUES ($1) RETURNING id;
+    // INSERT INTO user_profiles (user_id, full_name, bio) VALUES ($2, $3, $4);
     return this.prisma.user.create({
       data: {
         email: dto.email,
@@ -24,6 +28,12 @@ export class PrismaRelationsService {
   }
 
   async getUserWithProfile(userId: number) {
+    // Prisma `include` eagerly loads relation data.
+    // SQL equivalent:
+    // SELECT u.id, u.email, p.id, p.full_name, p.bio
+    // FROM users u
+    // LEFT JOIN user_profiles p ON p.user_id = u.id
+    // WHERE u.id = $1;
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { profile: true },
@@ -33,6 +43,8 @@ export class PrismaRelationsService {
   }
 
   async enrollStudent(dto: EnrollStudentDto) {
+    // Validate foreign keys explicitly for clearer error messages.
+    // (Database FK will also enforce this at insert time.)
     const student = await this.prisma.student.findUnique({
       where: { id: dto.studentId },
       select: { id: true },
@@ -50,6 +62,10 @@ export class PrismaRelationsService {
     }
 
     try {
+      // N:M via explicit join table `Enrollment`.
+      // SQL equivalent:
+      // INSERT INTO enrollments (student_id, course_id)
+      // VALUES ($1, $2);
       return await this.prisma.enrollment.create({
         data: {
           studentId: dto.studentId,
@@ -61,6 +77,7 @@ export class PrismaRelationsService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
+        // P2002 = unique constraint violation (our composite key already exists).
         throw new ConflictException('Student already enrolled in this course');
       }
       throw error;
@@ -68,6 +85,14 @@ export class PrismaRelationsService {
   }
 
   async getStudentWithCourses(studentId: number) {
+    // Fetch one student + all enrolled courses through join table.
+    // SQL equivalent:
+    // SELECT s.*, e.enrolled_at, c.*
+    // FROM students s
+    // LEFT JOIN enrollments e ON e.student_id = s.id
+    // LEFT JOIN courses c ON c.id = e.course_id
+    // WHERE s.id = $1
+    // ORDER BY e.enrolled_at ASC;
     const student = await this.prisma.student.findUnique({
       where: { id: studentId },
       include: {
@@ -85,6 +110,8 @@ export class PrismaRelationsService {
   }
 
   async getCourseWithStudents(courseId: number) {
+    // Inverse read of the same N:M relation:
+    // one course with all enrolled students.
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
       include: {

@@ -30,6 +30,8 @@ import { PrismaService } from '../prisma/prisma.service';
     {
       provide: 'COURSE_REPOSITORY',
       useFactory: (prismaService: PrismaService) => {
+        // This factory is the "switch" students can use to compare storage strategies
+        // without changing controller/service business logic.
         const impl = process.env.COURSE_REPOSITORY_IMPL?.toLowerCase().trim();
         if (impl === 'demo-seed') {
           return new DemoSeedCourseRepository();

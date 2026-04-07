@@ -8,6 +8,8 @@ import type { CourseListQuery } from './repositories/course-repository.interface
 @Injectable()
 export class CoursesService {
   constructor(
+    // Service depends on abstraction (`ICourseRepository`), not concrete DB technology.
+    // This is why we can switch implementation (in-memory, raw SQL, Prisma) from module wiring.
     @Inject('COURSE_REPOSITORY')
     private readonly coursesRepository: ICourseRepository,
   ) {}
