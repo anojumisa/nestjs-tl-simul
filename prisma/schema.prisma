@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(150)
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+model Lesson {
+  id         Int      @id @default(autoincrement())
+  courseId   Int      @map("course_id")
+  title      String   @db.VarChar(200)
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("lessons")
+}
+
+model User {
+  id      Int          @id @default(autoincrement())
+  email   String       @unique @db.VarChar(150)
+  profile UserProfile?
+
+  @@map("users")
+}
+
+model UserProfile {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @unique @map("user_id")
+  fullName String @map("full_name") @db.VarChar(120)
+  bio      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Student {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique @db.VarChar(150)
+  name        String       @db.VarChar(120)
+  enrollments Enrollment[]
+
+  @@map("students")
+}
+
+model Enrollment {
+  studentId  Int      @map("student_id")
+  courseId   Int      @map("course_id")
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}

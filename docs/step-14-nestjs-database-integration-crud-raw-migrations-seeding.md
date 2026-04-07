@@ -41,6 +41,8 @@ flowchart LR
 
   A --> B --> C --> D
   D -->|postgres| E --> F --> G
+  D -->|prisma| P[PrismaCourseRepository]
+  P --> G
   D -->|demo-seed| H
   D -->|default| I
 ```
@@ -341,5 +343,6 @@ Setelah ini:
 
 ## 10. Next Step (preview)
 
-- Integrasi relasi tabel (misal `lessons`, `enrollments`) agar JOIN benar-benar tercermin di endpoint.
-- Implementasi query lanjutan (pagination, sorting, filtering) lewat raw SQL.
+- Lanjut ke ORM Prisma: `docs/step-15-prisma-orm-integration.md`.
+- Ikuti command praktikum: `docs/step-15-prisma-commands-and-verification.md`.
+- Lalu Step 16 — relasi `Course` → `Lesson`, pagination, endpoint lesson: `docs/step-16-relations-pagination-and-lessons.md`.

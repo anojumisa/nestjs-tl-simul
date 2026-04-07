@@ -1,36 +1,48 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CoursesController } from './courses.controller';
+import { CourseLessonsController } from './course-lessons.controller';
 import { InMemoryCourseRepository } from './repositories/in-memory-course.repository';
 import { DemoSeedCourseRepository } from './learning/demo-seed-course.repository';
 import { PostgresCourseRepository } from './repositories/postgres-course.repository';
+import { PrismaCourseRepository } from './repositories/prisma-course.repository';
 import { DiShowcaseController } from './learning/di-showcase.controller';
+import { PrismaRelationsController } from './learning/prisma-relations.controller';
+import { PrismaRelationsService } from './learning/prisma-relations.service';
 import { requestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { loggerMiddleware } from '../common/middleware/logger.middleware';
 import { rateLimitMiddleware } from '../common/middleware/rate-limit.middleware';
 import { Pool } from 'pg';
+import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Module({
-  controllers: [CoursesController, DiShowcaseController],
+  imports: [PrismaModule],
+  controllers: [
+    CoursesController,
+    CourseLessonsController,
+    DiShowcaseController,
+    PrismaRelationsController,
+  ],
   providers: [
     CoursesService,
+    PrismaRelationsService,
     {
       provide: 'COURSE_REPOSITORY',
-      useFactory: () => {
+      useFactory: (prismaService: PrismaService) => {
         const impl = process.env.COURSE_REPOSITORY_IMPL?.toLowerCase().trim();
         if (impl === 'demo-seed') {
           return new DemoSeedCourseRepository();
         }
 
-        // Sebelum Step 14: selain `demo-seed`, default selalu `InMemoryCourseRepository`.
-        // Sekarang kita mulai "bergerak" ke integrasi PostgreSQL:
-        // - Jika `COURSE_REPOSITORY_IMPL=postgres`, gunakan `PostgresCourseRepository`.
-        // - Jika environment belum siap / tidak match, fallback ke in-memory.
+        if (impl === 'prisma') {
+          return new PrismaCourseRepository(prismaService);
+        }
+
+        // Setelah Step 14 + Step 15:
+        // - `postgres` -> PostgresCourseRepository (raw SQL)
+        // - `prisma`   -> PrismaCourseRepository (ORM Prisma)
+        // - lainnya    -> fallback in-memory
         if (impl === 'postgres') {
           const databaseUrl = process.env.DATABASE_URL;
 
@@ -65,11 +77,13 @@ import { Pool } from 'pg';
          *
          * Sekarang (yang baru):
          * - masih tetap fallback ke in-memory untuk safety net
-         * - tetapi jika `COURSE_REPOSITORY_IMPL=postgres`, kita pindah ke `PostgresCourseRepository`.
+         * - jika `COURSE_REPOSITORY_IMPL=postgres`, pindah ke `PostgresCourseRepository`
+         * - jika `COURSE_REPOSITORY_IMPL=prisma`, pindah ke `PrismaCourseRepository`.
          */
         // return new InMemoryCourseRepository();
         return new InMemoryCourseRepository();
       },
+      inject: [PrismaService],
     },
   ],
 })
@@ -77,6 +91,6 @@ export class CoursesModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(requestIdMiddleware, loggerMiddleware, rateLimitMiddleware)
-      .forRoutes({ path: 'courses', method: RequestMethod.ALL });
+      .forRoutes(CoursesController, CourseLessonsController);
   }
 }

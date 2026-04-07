@@ -4,7 +4,7 @@
 
 # nestjs-demo — Learning Platform API (NestJS)
 
-Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–14) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, middleware, interceptor, exception filter, dependency injection, sampai integrasi PostgreSQL dengan raw SQL.
+Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–16) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, middleware, interceptor, exception filter, dependency injection, sampai integrasi PostgreSQL (raw SQL) dan **ORM Prisma**.
 
 ---
 
@@ -13,11 +13,11 @@ Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API d
 | Bagian | Isi |
 |--------|-----|
 | **`docs/`** | Panduan langkah demi langkah (Bahasa Indonesia): konsep, tugas, checklist. |
-| **`src/`** | Aplikasi NestJS: modul `courses`, middleware, interceptor, filter, DTO, repository in-memory + PostgreSQL (raw SQL). |
+| **`src/`** | Aplikasi NestJS: modul `courses`, middleware, interceptor, filter, DTO, repository in-memory + PostgreSQL (raw SQL) + Prisma ORM. |
 | **`test/`** | Tes bawaan template Nest (unit / e2e). |
 | **`package.json`** | Script (`start`, `build`, `test`) dan dependency (Nest, Swagger, class-validator, dll.). |
 
-**Domain contoh:** *Learning Platform API* — resource **Course** (CRUD) sebagai tulang punggung untuk menjelaskan arsitektur Nest.
+**Domain contoh:** *Learning Platform API* — resource **Course** (CRUD) dan **Lesson** (nested di bawah course, Step 16) sebagai tulang punggung untuk menjelaskan arsitektur Nest.
 
 ---
 
@@ -26,13 +26,14 @@ Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API d
 Secara garis besar, codebase ini memuat **satu alur API lengkap** untuk fitur Course, plus **cross-cutting concerns** yang biasa dipakai di API production:
 
 - **Module / Controller / Service** — routing HTTP dan business logic.
-- **Repository pattern** — `ICourseRepository` + implementasi `InMemory`, `DemoSeed`, dan `PostgreSQL` (raw SQL) lewat token `COURSE_REPOSITORY`.
+- **Repository pattern** — `ICourseRepository` + implementasi `InMemory`, `DemoSeed`, `PostgreSQL` (raw SQL), dan `Prisma` lewat token `COURSE_REPOSITORY`.
+- **ORM Prisma** — mode repository tambahan `PrismaCourseRepository` untuk pembelajaran ORM di Step 15; relasi **Course → Lesson**, pagination, dan endpoint lesson di Step 16.
 - **DTO + ValidationPipe** — validasi body dengan `class-validator`.
 - **Swagger** — dokumentasi interaktif di `/docs`.
 - **Middleware** — `X-Request-Id`, logging, rate limiting (demo) untuk route `/courses`.
 - **Interceptors** — logging durasi + **response wrapper** sukses (`success`, `data`, `meta`).
 - **Exception filter** — format error konsisten (`success: false`, `error`, `meta`).
-- **Dependency injection** — constructor injection + custom provider token; **demo swap repository** lewat env `COURSE_REPOSITORY_IMPL=demo-seed|postgres` + **`GET /learning/di`** (lihat Step 09 dan `src/courses/learning/`).
+- **Dependency injection** — constructor injection + custom provider token; **demo swap repository** lewat env `COURSE_REPOSITORY_IMPL=demo-seed|postgres|prisma` + **`GET /learning/di`** (lihat Step 09 dan `src/courses/learning/`).
 
 Detail teori dan latihan ada di masing-masing file `docs/step-*.md`.
 
@@ -100,6 +101,21 @@ curl -s http://localhost:3000/learning/di | jq .
 curl -s http://localhost:3000/courses | jq .
 ```
 
+### Menjalankan mode Prisma (Step 15)
+
+1. Buat file env (jika belum): `cp .env.example .env`
+2. Isi **`DATABASE_URL`** ke PostgreSQL kamu dan pastikan **`COURSE_REPOSITORY_IMPL=prisma`** (ini default di `.env.example`).
+3. Jalankan workflow Prisma (lihat detail di [`docs/step-15-prisma-commands-and-verification.md`](docs/step-15-prisma-commands-and-verification.md)):
+
+```bash
+pnpm prisma:generate
+pnpm prisma:migrate:dev
+pnpm prisma:seed
+```
+
+4. Start server: `pnpm run start:dev`
+5. Verifikasi: `curl -s http://localhost:3000/learning/di | jq .` dan `curl -s http://localhost:3000/courses | jq .`
+
 Build production:
 
 ```bash
@@ -134,6 +150,9 @@ src/
   app.module.ts           # Root module
   app.controller.ts       # GET / (pesan sambutan API)
   app.service.ts
+  prisma/
+    prisma.module.ts      # @Global — export PrismaService (Step 15)
+    prisma.service.ts
   common/
     middleware/           # request id, logger, rate limit (demo)
     interceptors/         # logging, wrap response sukses
@@ -145,8 +164,10 @@ src/
     learning/             # Contoh DI untuk demo kelas (anti-pola vs repo alternatif, GET /learning/di)
     dto/                  # CreateCourseDto, UpdateCourseDto (+ validasi)
     entities/             # Course (domain sederhana)
-    repositories/         # Interface + InMemoryCourseRepository
+    repositories/         # ICourseRepository + InMemory, DemoSeed, Postgres (raw), Prisma
 ```
+
+Di **root repository** (sejajar `src/`) ada folder **`prisma/`** berisi `schema.prisma`, migrations, dan seed — lihat Step 15.
 
 ---
 
@@ -170,6 +191,9 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 12 | SQL fundamental (DDL, CRUD, JOIN, transaction) | [docs/step-12-sql-fundamental.md](docs/step-12-sql-fundamental.md) |
 | 13 | Advanced SQL (JOIN lanjutan, UNION, subquery, indexing) | [docs/step-13-advanced-sql-query-and-performance.md](docs/step-13-advanced-sql-query-and-performance.md) |
 | 14 | Integrasi PostgreSQL ke NestJS (raw CRUD, migrations, seeding) | [docs/step-14-nestjs-database-integration-crud-raw-migrations-seeding.md](docs/step-14-nestjs-database-integration-crud-raw-migrations-seeding.md) |
+| 15 | ORM Prisma di NestJS (schema, client, migrate, seed, repository integration) | [docs/step-15-prisma-orm-integration.md](docs/step-15-prisma-orm-integration.md) |
+| 16 | Relasi Prisma, pagination/filter `GET /courses`, CRUD lesson nested | [docs/step-16-relations-pagination-and-lessons.md](docs/step-16-relations-pagination-and-lessons.md) |
+| 17 | Prisma relationship patterns (1:1, 1:N, N:1, N:M) + learning endpoints | [docs/step-17-prisma-relationship-patterns.md](docs/step-17-prisma-relationship-patterns.md) |
 
 ---
 
@@ -180,16 +204,24 @@ Base URL: `http://localhost:3000`
 | Method | Path | Keterangan |
 |--------|------|------------|
 | GET | `/` | Pesan sambutan API |
-| GET | `/courses` | Daftar course (sumber data mengikuti repository binding aktif) |
-| GET | `/courses/:id` | Satu course (`id` angka — `ParseIntPipe`) |
+| GET | `/courses` | Daftar course: `data` berisi `{ items, total, page, limit }` + query opsional `page`, `limit`, `sort`, `order`, `q` (lihat Step 16) |
+| GET | `/courses/:id` | Satu course; query `includeLessons=true` untuk menyertakan `lessons[]` |
 | POST | `/courses` | Buat course (body JSON, divalidasi DTO) |
 | PATCH | `/courses/:id` | Update course |
 | DELETE | `/courses/:id` | Hapus course |
+| GET | `/courses/:courseId/lessons` | Daftar lesson milik course |
+| POST | `/courses/:courseId/lessons` | Tambah lesson (`title`, `sortOrder` opsional) |
+| DELETE | `/courses/:courseId/lessons/:lessonId` | Hapus lesson |
 | GET | `/learning/di` | Info showcase Dependency Injection (binding aktif, path file contoh, langkah demo) |
+| POST | `/learning/relations/one-to-one/users` | Demo create user + profile (relasi 1:1) |
+| GET | `/learning/relations/one-to-one/users/:userId` | Demo read user + profile (relasi 1:1) |
+| POST | `/learning/relations/many-to-many/enrollments` | Demo enroll student ke course (relasi N:M) |
+| GET | `/learning/relations/many-to-many/students/:studentId` | Demo read student + courses (relasi N:M) |
+| GET | `/learning/relations/many-to-many/courses/:courseId` | Demo read course + students (relasi N:M) |
 
 **Swagger UI:** [http://localhost:3000/docs](http://localhost:3000/docs) — coba endpoint langsung dari browser.
 
-**Demo DI (ganti repository tanpa mengubah `CoursesService`):** set environment variable **`COURSE_REPOSITORY_IMPL=demo-seed`** atau **`COURSE_REPOSITORY_IMPL=postgres`**, restart server, lalu `GET /courses` — sumber data akan mengikuti binding aktif (lihat penjelasan di `GET /learning/di`).
+**Demo DI (ganti repository tanpa mengubah `CoursesService`):** set environment variable **`COURSE_REPOSITORY_IMPL=demo-seed`**, **`COURSE_REPOSITORY_IMPL=postgres`**, atau **`COURSE_REPOSITORY_IMPL=prisma`**, restart server, lalu `GET /courses` — sumber data akan mengikuti binding aktif (lihat penjelasan di `GET /learning/di`).
 
 ---
 
@@ -262,6 +294,14 @@ curl -s -X POST http://localhost:3000/courses \
 **Panduan lengkap CRUD verifikasi Step 14**
 
 - Lihat `docs/step-14-curl-examples.md`
+
+**Panduan command Prisma (Step 15)**
+
+- Lihat `docs/step-15-prisma-commands-and-verification.md`
+
+**Relasi, pagination, lesson (Step 16)**
+
+- Lihat `docs/step-16-commands-and-verification.md`
 
 **Lihat header (termasuk `X-Request-Id` dan rate limit jika sudah lewat request ke-2 dalam window)**
 

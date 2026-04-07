@@ -6,12 +6,15 @@ function resolveRepositoryBinding(): {
   activeRepository:
     | 'InMemoryCourseRepository'
     | 'DemoSeedCourseRepository'
-    | 'PostgresCourseRepository';
+    | 'PostgresCourseRepository'
+    | 'PrismaCourseRepository';
 } {
   const normalized = process.env.COURSE_REPOSITORY_IMPL?.toLowerCase().trim();
   const activeRepository =
     normalized === 'demo-seed'
       ? 'DemoSeedCourseRepository'
+      : normalized === 'prisma'
+        ? 'PrismaCourseRepository'
       : normalized === 'postgres'
         ? 'PostgresCourseRepository'
         : 'InMemoryCourseRepository';
@@ -44,16 +47,18 @@ export class DiShowcaseController {
         variable: 'COURSE_REPOSITORY_IMPL',
         currentValue: envRaw ?? null,
         notes:
-          'Kosong/selain demo-seed/postgres → InMemoryCourseRepository. Nilai demo-seed → DemoSeedCourseRepository. Nilai postgres → PostgresCourseRepository.',
+          'Kosong/selain demo-seed/postgres/prisma → InMemoryCourseRepository. Nilai demo-seed → DemoSeedCourseRepository. Nilai postgres → PostgresCourseRepository. Nilai prisma → PrismaCourseRepository.',
       },
       activeBinding: {
         implementationClass: activeRepository,
         compareGetCourses:
           activeRepository === 'DemoSeedCourseRepository'
-            ? 'Response berisi judul berawalan [Showcase DI] (id 201–202).'
+            ? 'GET /courses mengembalikan objek berisi `items`, `total`, `page`, `limit` (judul demo id 201–202).'
+            : activeRepository === 'PrismaCourseRepository'
+              ? 'GET /courses mengembalikan metadata + `items` dari tabel `courses` via Prisma; lesson di `GET /courses/:id?includeLessons=true` atau `/courses/:id/lessons`.'
             : activeRepository === 'PostgresCourseRepository'
-              ? 'Response berisi data dari tabel `courses` di PostgreSQL.'
-              : 'Response berisi data dummy standar (id 1–2 + data yang kamu buat lewat POST).',
+              ? 'GET /courses mengembalikan metadata + `items` dari PostgreSQL (raw SQL); lesson memerlukan tabel `lessons` — lihat Step 16.'
+              : 'GET /courses mengembalikan metadata + `items` (in-memory: id 1–2 + data dari POST).',
       },
       codePaths: {
         serviceWithInjection: 'src/courses/courses.service.ts',
@@ -70,6 +75,9 @@ export class DiShowcaseController {
         'GET /courses lagi — CoursesService sama, data dari repository demo.',
         'Stop server; jalankan: COURSE_REPOSITORY_IMPL=postgres pnpm run start:dev',
         'Pastikan DB sudah siap (migrations + seed), lalu GET /courses untuk melihat data dari PostgreSQL.',
+        'Stop server; jalankan: COURSE_REPOSITORY_IMPL=prisma pnpm run start:dev',
+        'Jalankan Prisma migrate + seed, lalu GET /courses untuk melihat data via Prisma ORM.',
+        'Untuk Step 17 relasi lanjut: coba POST /learning/relations/one-to-one/users dan GET /learning/relations/many-to-many/students/:studentId.',
       ],
     };
   }
