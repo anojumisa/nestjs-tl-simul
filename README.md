@@ -318,6 +318,11 @@ curl -s -X POST http://localhost:3000/courses \
 
 - Lihat `docs/step-18-commands-and-verification.md`
 
+**Advanced auth/security (Step 19)**
+
+- Lihat `docs/step-19-advanced-authentication-security.md`
+- Lihat `docs/step-19-commands-and-verification.md`
+
 **Lihat header (termasuk `X-Request-Id` dan rate limit jika sudah lewat request ke-2 dalam window)**
 
 ```bash
