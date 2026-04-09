@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
+  const mentorHash = await bcrypt.hash('MentorDemo123', 10);
+  const studentHash = await bcrypt.hash('StudentDemo123', 10);
+
   await prisma.$transaction(async (tx) => {
     await tx.enrollment.deleteMany();
     await tx.userProfile.deleteMany();
@@ -64,12 +68,22 @@ async function main() {
     await tx.user.create({
       data: {
         email: 'mentor@learning.local',
+        passwordHash: mentorHash,
+        role: 'admin',
         profile: {
           create: {
             fullName: 'Mentor Prisma',
             bio: 'Contoh relasi one-to-one antara User dan UserProfile.',
           },
         },
+      },
+    });
+
+    await tx.user.create({
+      data: {
+        email: 'student@learning.local',
+        passwordHash: studentHash,
+        role: 'student',
       },
     });
 

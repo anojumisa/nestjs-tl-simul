@@ -6,10 +6,12 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('courses')
 @Controller('courses/:courseId/lessons')
@@ -23,6 +25,8 @@ export class CourseLessonsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Tambah lesson pada course' })
   create(
     @Param('courseId', ParseIntPipe) courseId: number,
@@ -32,6 +36,8 @@ export class CourseLessonsController {
   }
 
   @Delete(':lessonId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Hapus lesson (mengacu pada course)' })
   remove(
     @Param('courseId', ParseIntPipe) courseId: number,

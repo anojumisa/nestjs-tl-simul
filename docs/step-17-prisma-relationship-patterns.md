@@ -135,6 +135,6 @@ Join model `Enrollment` memberi fleksibilitas:
 
 ## 8. Next Step (preview)
 
+- **Step 18** — authentication & authorization (JWT, guards, role): [`docs/step-18-nestjs-authentication-authorization.md`](step-18-nestjs-authentication-authorization.md) dan [`docs/step-18-commands-and-verification.md`](step-18-commands-and-verification.md).
 - Transaction tingkat lanjut (multi-step write + rollback strategy).
 - Soft delete + audit field.
-- Otorisasi (RBAC) per course/lesson/enrollment.

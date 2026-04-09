@@ -34,9 +34,11 @@ model Lesson {
 }
 
 model User {
-  id      Int          @id @default(autoincrement())
-  email   String       @unique @db.VarChar(150)
-  profile UserProfile?
+  id           Int          @id @default(autoincrement())
+  email        String       @unique @db.VarChar(150)
+  passwordHash String       @map("password_hash")
+  role         String       @default("student") @db.VarChar(20)
+  profile      UserProfile?
 
   @@map("users")
 }

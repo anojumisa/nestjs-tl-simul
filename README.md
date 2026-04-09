@@ -4,7 +4,7 @@
 
 # nestjs-demo — Learning Platform API (NestJS)
 
-Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–16) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, middleware, interceptor, exception filter, dependency injection, sampai integrasi PostgreSQL (raw SQL) dan **ORM Prisma**.
+Repository ini adalah **proyek pembelajaran** untuk membangun backend REST API dengan **[NestJS](https://nestjs.com/)** (TypeScript). Materi disusun bertahap di folder `docs/` (Step 01–18) dan **kode di `src/`** mengimplementasikan konsep-konsep tersebut agar bisa didemokan ke mahasiswa: dari module/controller/service, repository pattern, validasi, middleware, interceptor, exception filter, dependency injection, sampai integrasi PostgreSQL (raw SQL) dan **ORM Prisma**.
 
 ---
 
@@ -194,6 +194,7 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 15 | ORM Prisma di NestJS (schema, client, migrate, seed, repository integration) | [docs/step-15-prisma-orm-integration.md](docs/step-15-prisma-orm-integration.md) |
 | 16 | Relasi Prisma, pagination/filter `GET /courses`, CRUD lesson nested | [docs/step-16-relations-pagination-and-lessons.md](docs/step-16-relations-pagination-and-lessons.md) |
 | 17 | Prisma relationship patterns (1:1, 1:N, N:1, N:M) + learning endpoints | [docs/step-17-prisma-relationship-patterns.md](docs/step-17-prisma-relationship-patterns.md) |
+| 18 | Authentication & authorization (JWT, guards, role) | [docs/step-18-nestjs-authentication-authorization.md](docs/step-18-nestjs-authentication-authorization.md) |
 
 ---
 
@@ -206,12 +207,13 @@ Base URL: `http://localhost:3000`
 | GET | `/` | Pesan sambutan API |
 | GET | `/courses` | Daftar course: `data` berisi `{ items, total, page, limit }` + query opsional `page`, `limit`, `sort`, `order`, `q` (lihat Step 16) |
 | GET | `/courses/:id` | Satu course; query `includeLessons=true` untuk menyertakan `lessons[]` |
-| POST | `/courses` | Buat course (body JSON, divalidasi DTO) |
-| PATCH | `/courses/:id` | Update course |
-| DELETE | `/courses/:id` | Hapus course |
+| POST | `/courses` | Buat course — **JWT wajib** (Step 18) |
+| PATCH | `/courses/:id` | Update course — **JWT wajib** |
+| DELETE | `/courses/:id` | Hapus course — **JWT + role admin** |
 | GET | `/courses/:courseId/lessons` | Daftar lesson milik course |
-| POST | `/courses/:courseId/lessons` | Tambah lesson (`title`, `sortOrder` opsional) |
-| DELETE | `/courses/:courseId/lessons/:lessonId` | Hapus lesson |
+| POST | `/courses/:courseId/lessons` | Tambah lesson — **JWT wajib** |
+| DELETE | `/courses/:courseId/lessons/:lessonId` | Hapus lesson — **JWT wajib** |
+| POST | `/auth/login` | Login — dapatkan JWT (lihat Step 18) |
 | GET | `/learning/di` | Info showcase Dependency Injection (binding aktif, path file contoh, langkah demo) |
 | POST | `/learning/relations/one-to-one/users` | Demo create user + profile (relasi 1:1) |
 | GET | `/learning/relations/one-to-one/users/:userId` | Demo read user + profile (relasi 1:1) |
@@ -283,10 +285,12 @@ curl -s http://localhost:3000/learning/di | jq .
 COURSE_REPOSITORY_IMPL=demo-seed pnpm run start:dev
 ```
 
-**POST course baru**
+**POST course baru** (butuh JWT — lihat Step 18)
 
 ```bash
+TOKEN="...jwt-dari-post-auth-login..."
 curl -s -X POST http://localhost:3000/courses \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"title":"Fundamental NestJS untuk Pemula","description":"Kelas pengantar untuk memahami dasar NestJS dan REST API."}' | jq .
 ```
@@ -302,6 +306,14 @@ curl -s -X POST http://localhost:3000/courses \
 **Relasi, pagination, lesson (Step 16)**
 
 - Lihat `docs/step-16-commands-and-verification.md`
+
+**Relasi Prisma lanjut (Step 17)**
+
+- Lihat `docs/step-17-commands-and-verification.md`
+
+**JWT auth & guards (Step 18)**
+
+- Lihat `docs/step-18-commands-and-verification.md`
 
 **Lihat header (termasuk `X-Request-Id` dan rate limit jika sudah lewat request ke-2 dalam window)**
 

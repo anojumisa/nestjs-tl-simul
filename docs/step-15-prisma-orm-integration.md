@@ -323,5 +323,6 @@ Tidak 100%. Tetap perlu:
 - **Step 17** — pola relasi Prisma (1:1, 1:N, N:1, N:M) + blueprint join model many-to-many:
   - `docs/step-17-prisma-relationship-patterns.md`
   - `docs/step-17-commands-and-verification.md`
-- Setelah itu: soft delete, otorisasi per resource.
+- **Step 18** — authentication & authorization (JWT, guards): `docs/step-18-nestjs-authentication-authorization.md`.
+- Setelah itu: soft delete, otorisasi per resource lanjutan.
 

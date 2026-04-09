@@ -15,9 +15,10 @@ import { rateLimitMiddleware } from '../common/middleware/rate-limit.middleware'
 import { Pool } from 'pg';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   controllers: [
     CoursesController,
     CourseLessonsController,

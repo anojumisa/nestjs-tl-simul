@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateUserWithProfileDto {
   @ApiProperty({ example: 'mentor@learning.local' })
@@ -17,4 +17,14 @@ export class CreateUserWithProfileDto {
   @IsString()
   @MaxLength(500)
   bio?: string;
+
+  @ApiPropertyOptional({
+    example: 'RelationsDemo123!',
+    description:
+      'Jika kosong, server memakai password default latihan (lihat Step 17 docs).',
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  password?: string;
 }

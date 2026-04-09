@@ -32,6 +32,16 @@ async function bootstrap() {
     .setTitle('Learning Platform API')
     .setDescription('Dokumentasi API untuk Learning Platform')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT dari POST /auth/login (tempel token tanpa kata Bearer)',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);

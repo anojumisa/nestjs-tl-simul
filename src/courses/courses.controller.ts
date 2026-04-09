@@ -10,12 +10,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { ListCoursesQueryDto } from './dto/list-courses-query.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('courses')
 @Controller('courses')
@@ -43,12 +47,16 @@ export class CoursesController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Buat course baru' })
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update course berdasarkan id' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -58,7 +66,10 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Hapus course berdasarkan id' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Hapus course berdasarkan id (hanya role admin)' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.remove(id);
   }

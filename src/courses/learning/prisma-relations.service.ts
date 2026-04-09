@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserWithProfileDto } from '../dto/create-user-with-profile.dto';
 import { EnrollStudentDto } from '../dto/enroll-student.dto';
@@ -9,6 +10,9 @@ export class PrismaRelationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createUserWithProfile(dto: CreateUserWithProfileDto) {
+    const plain = dto.password ?? 'RelationsDemo123!';
+    const passwordHash = await bcrypt.hash(plain, 10);
+
     // 1:1 (User <-> UserProfile) via nested create in one Prisma call.
     // SQL equivalent (inside a transaction):
     // INSERT INTO users (email) VALUES ($1) RETURNING id;
@@ -16,6 +20,8 @@ export class PrismaRelationsService {
     return this.prisma.user.create({
       data: {
         email: dto.email,
+        passwordHash,
+        role: 'student',
         profile: {
           create: {
             fullName: dto.fullName,
