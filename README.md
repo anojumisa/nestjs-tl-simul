@@ -195,6 +195,8 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 16 | Relasi Prisma, pagination/filter `GET /courses`, CRUD lesson nested | [docs/step-16-relations-pagination-and-lessons.md](docs/step-16-relations-pagination-and-lessons.md) |
 | 17 | Prisma relationship patterns (1:1, 1:N, N:1, N:M) + learning endpoints | [docs/step-17-prisma-relationship-patterns.md](docs/step-17-prisma-relationship-patterns.md) |
 | 18 | Authentication & authorization (JWT, guards, role) | [docs/step-18-nestjs-authentication-authorization.md](docs/step-18-nestjs-authentication-authorization.md) |
+| 19 | Advanced authentication & security concepts (hashing, refresh token, CSP/CSRF, rate limiting, hardening) | [docs/step-19-advanced-authentication-security.md](docs/step-19-advanced-authentication-security.md) |
+| 19 | Commands & verification (advanced auth/security) | [docs/step-19-commands-and-verification.md](docs/step-19-commands-and-verification.md) |
 
 ---
 
@@ -214,6 +216,7 @@ Base URL: `http://localhost:3000`
 | POST | `/courses/:courseId/lessons` | Tambah lesson — **JWT wajib** |
 | DELETE | `/courses/:courseId/lessons/:lessonId` | Hapus lesson — **JWT wajib** |
 | POST | `/auth/login` | Login — dapatkan JWT (lihat Step 18) |
+| POST | `/auth/refresh` | Rotasi refresh token — dapatkan access token baru (lihat Step 19) |
 | GET | `/learning/di` | Info showcase Dependency Injection (binding aktif, path file contoh, langkah demo) |
 | POST | `/learning/relations/one-to-one/users` | Demo create user + profile (relasi 1:1) |
 | GET | `/learning/relations/one-to-one/users/:userId` | Demo read user + profile (relasi 1:1) |

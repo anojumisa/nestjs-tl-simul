@@ -38,6 +38,10 @@ model User {
   email        String       @unique @db.VarChar(150)
   passwordHash String       @map("password_hash")
   role         String       @default("student") @db.VarChar(20)
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockUntil           DateTime? @map("lock_until")
+  refreshTokenHash    String?   @map("refresh_token_hash")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
   profile      UserProfile?
 
   @@map("users")

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
+import { authRateLimitMiddleware } from './middleware/auth-rate-limit.middleware';
 
 @Module({
   imports: [
@@ -27,4 +28,8 @@ import { RolesGuard } from './roles.guard';
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   exports: [AuthService, JwtModule, JwtAuthGuard, RolesGuard],
 })
-export class AuthModule {}
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(authRateLimitMiddleware).forRoutes(AuthController);
+  }
+}

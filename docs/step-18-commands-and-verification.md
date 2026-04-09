@@ -15,7 +15,32 @@ Tambahkan ke `.env` (lihat juga `.env.example`):
 ```env
 JWT_SECRET=ganti-dengan-string-panjang-acak-minimal-32-karakter
 JWT_EXPIRES_IN=1d
+JWT_REFRESH_SECRET=ganti-dengan-string-panjang-acak-lainnya-minimal-32-karakter
+JWT_REFRESH_EXPIRES_IN=7d
+AUTH_MAX_FAILED_LOGINS=5
+AUTH_LOCK_MINUTES=15
 ```
+
+### Generate secret secara cepat
+
+Pakai salah satu command di bawah untuk menghasilkan string acak kuat:
+
+```bash
+# Option A (OpenSSL) - 64 hex chars
+openssl rand -hex 32
+
+# Option B (Node.js) - 64 hex chars
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Contoh isi `.env`:
+
+```env
+JWT_SECRET=<hasil-command-pertama>
+JWT_REFRESH_SECRET=<hasil-command-kedua-berbeda>
+```
+
+> Gunakan **nilai berbeda** untuk `JWT_SECRET` dan `JWT_REFRESH_SECRET`.
 
 ---
 
@@ -50,7 +75,7 @@ curl -s -X POST http://localhost:3000/auth/login \
   -d '{"email":"mentor@learning.local","password":"MentorDemo123"}' | jq .
 ```
 
-Salin nilai `access_token` dari `data` (setelah interceptor) atau dari body mentah sesuai response app kamu.
+Salin nilai `access_token` dari `data` (setelah interceptor) atau dari body mentah sesuai response app kamu. Sekarang login juga mengembalikan `refresh_token`.
 
 Dengan interceptor sukses, bentuknya mirip:
 
@@ -59,6 +84,7 @@ Dengan interceptor sukses, bentuknya mirip:
   "success": true,
   "data": {
     "access_token": "...",
+    "refresh_token": "...",
     "user": { "id": 1, "email": "...", "role": "admin" }
   }
 }
@@ -129,3 +155,4 @@ Login sebagai **admin**, `DELETE` boleh (hati-hati menghapus data latihan).
 ## 9. Referensi konsep
 
 - `docs/step-18-nestjs-authentication-authorization.md`
+- `docs/step-19-advanced-authentication-security.md`

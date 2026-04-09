@@ -55,7 +55,7 @@ Perhatikan **CSRF** untuk cookie-based form POST di browser.
 
 **Kelebihan:** stateless server (tanpa session store per request); cocok untuk API dan mobile.
 
-**Keterbatasan:** revoke token sulit sebelum expiry (perlu denylist atau refresh-token flow — **di luar scope** step ini).
+**Keterbatasan:** revoke token sulit sebelum expiry bila hanya access token; Step 19 menambahkan refresh-token flow dasar sebagai evolusi.
 
 ```mermaid
 flowchart LR
@@ -223,8 +223,9 @@ Di repo dipakai **`JwtModule.registerAsync`** agar `JWT_SECRET` dan `JWT_EXPIRES
 
 #### Alur ringkas: login vs request berikutnya
 
-1. **Login:** `AuthService` validasi password (bcrypt + Prisma) → `jwt.signAsync(payload)` → client simpan `access_token`.
+1. **Login:** `AuthService` validasi password (bcrypt + Prisma) → `jwt.signAsync(payload)` untuk access token + sign refresh token → client simpan token.
 2. **Request protected:** header `Authorization: Bearer ...` → `JwtAuthGuard` → Passport + `JwtStrategy` verifikasi tanda tangan & expiry → `validate()` load user dari DB → `request.user` tersedia untuk handler dan `RolesGuard`.
+3. **Refresh (Step 19):** `POST /auth/refresh` memverifikasi refresh token, cek hash token tersimpan, lalu rotasi token.
 
 ---
 
@@ -240,7 +241,8 @@ Bagian ini menjelaskan **urutan pemanggilan kode** yang sudah ada di repo: dari 
 4. **`AuthService.login`** (`src/auth/auth.service.ts`):
    - Memanggil **`validateUser`**: `PrismaService` mengambil user by email; **`bcrypt.compare`** membandingkan password plain dengan `user.passwordHash`. Jika gagal → **`UnauthorizedException`** (401).
    - Membentuk **`JwtPayload`** (`sub`, `email`, `role`) lalu **`JwtService.signAsync`** (dari **`JwtModule`** yang dikonfigurasi di `src/auth/auth.module.ts` dengan `JWT_SECRET` / `JWT_EXPIRES_IN`) menghasilkan string **`access_token`**.
-5. Response JSON `{ access_token, user: { id, email, role } }` keluar; **`LoggingInterceptor`** dan **`WrapResponseInterceptor`** global membungkus body sukses seperti endpoint lain.
+   - Membuat **`refresh_token`** dengan secret/expiry terpisah, menyimpan hash refresh token ke user (`refreshTokenHash` + expiry).
+5. Response JSON `{ access_token, refresh_token, user: { id, email, role } }` keluar; **`LoggingInterceptor`** dan **`WrapResponseInterceptor`** global membungkus body sukses seperti endpoint lain.
 
 **Ringkas:** `AuthController` → `AuthService` → Prisma + bcrypt → `JwtService.sign` → response. **Tidak** melalui `JwtStrategy` atau `JwtAuthGuard` (login adalah endpoint publik).
 
@@ -281,16 +283,18 @@ Sama seperti alur B untuk tahap awal, lalu guard **kedua** dijalankan (urutan de
 
 | File | Fungsi |
 |------|--------|
-| `prisma/schema.prisma` | `User.passwordHash`, `User.role` untuk login & RBAC demo |
+| `prisma/schema.prisma` | `User.passwordHash`, `User.role`, failed-login + refresh-token fields |
 | `prisma/seed.ts` | User seed dengan hash bcrypt |
 | `src/auth/auth.module.ts` | Registrasi `JwtModule`, `AuthService`, `JwtStrategy`, controller |
-| `src/auth/auth.service.ts` | Validasi password, `login()`, `sign` JWT |
-| `src/auth/auth.controller.ts` | `POST /auth/login` |
+| `src/auth/auth.service.ts` | Validasi password, lockout policy, `login()`, `refresh()`, sign+rotate token |
+| `src/auth/auth.controller.ts` | `POST /auth/login`, `POST /auth/refresh` |
 | `src/auth/jwt.strategy.ts` | Validasi bearer JWT, load user dari DB |
 | `src/auth/jwt-auth.guard.ts` | Thin wrapper `AuthGuard('jwt')` |
 | `src/auth/roles.decorator.ts` | `@Roles('admin')` metadata |
 | `src/auth/roles.guard.ts` | Cek `request.user.role` |
 | `src/auth/dto/login.dto.ts` | Validasi body login |
+| `src/auth/dto/refresh-token.dto.ts` | Validasi body refresh token |
+| `src/auth/middleware/auth-rate-limit.middleware.ts` | Rate limit khusus endpoint auth (`/auth/*`) |
 | `src/app.module.ts` | Import `AuthModule` |
 | `src/main.ts` | Swagger `addBearerAuth` |
 | `src/courses/courses.controller.ts` | JWT pada `POST`/`PATCH`; `admin` pada `DELETE` |
@@ -333,6 +337,7 @@ Strategy mengambil user terbaru dari database berdasarkan `sub` agar role tidak 
 
 ## 8. Next Step (preview)
 
+- Lanjut ke [Step 19 - Advanced Authentication & Security Concepts](step-19-advanced-authentication-security.md).
 - Refresh token + revoke / denylist.
 - OAuth2 (Google, GitHub).
 - Policy-based authorization per resource (misalnya pemilik course saja).
