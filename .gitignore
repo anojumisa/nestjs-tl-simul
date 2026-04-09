@@ -60,3 +60,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /raw
 /wiki
 /generated/prisma
+
+# pnpm local cache
+.pnpm-store/
