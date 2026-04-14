@@ -197,6 +197,7 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 18 | Authentication & authorization (JWT, guards, role) | [docs/step-18-nestjs-authentication-authorization.md](docs/step-18-nestjs-authentication-authorization.md) |
 | 19 | Advanced authentication & security concepts (hashing, refresh token, CSP/CSRF, rate limiting, hardening) | [docs/step-19-advanced-authentication-security.md](docs/step-19-advanced-authentication-security.md) |
 | 19 | Commands & verification (advanced auth/security) | [docs/step-19-commands-and-verification.md](docs/step-19-commands-and-verification.md) |
+| 20 | Unit testing di NestJS (service/controller/guard, mocking, coverage) | [docs/step-20-unit-testing-di-nestjs.md](docs/step-20-unit-testing-di-nestjs.md) |
 
 ---
 

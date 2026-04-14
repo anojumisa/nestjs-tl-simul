@@ -422,7 +422,7 @@ Atau jika `forbidNonWhitelisted: true` dan client mengirim field yang tidak dike
 }
 ```
 
-Mahasiswa bisa memakai response ini untuk:
+Student bisa memakai response ini untuk:
 
 - Debug di Postman/Thunder Client.
 - Menampilkan pesan error ke user di frontend.

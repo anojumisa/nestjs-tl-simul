@@ -100,7 +100,7 @@ Secara garis besar untuk satu request HTTP:
 5. **Controller handler** — bisnis utama.
 6. **Interceptor** (sesudah handler) — contoh: wrap response sukses.
 
-Jadi pernyataan “guard jalan setelah middleware, sebelum pipe pada fase pra-handler” membantu mahasiswa menempatkan **di mana** auth dicek: setelah request masuk aplikasi, **sebelum** validasi body dan **sebelum** handler.
+Jadi pernyataan “guard jalan setelah middleware, sebelum pipe pada fase pra-handler” membantu student menempatkan **di mana** auth dicek: setelah request masuk aplikasi, **sebelum** validasi body dan **sebelum** handler.
 
 Diagram alur (satu request, fase pra-handler → handler → pasca-handler):
 
