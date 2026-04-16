@@ -102,9 +102,16 @@ Inti alurnya:
 
 ## 6. Hands-on lokal: Dockerize NestJS app
 
-### 6.1 Tambahkan Dockerfile baseline
+### 6.1 Dockerfile dan docker ignore sudah tersedia di repo
 
-Buat `Dockerfile` di root project:
+Repo ini sudah menyediakan:
+
+- `Dockerfile`
+- `.dockerignore`
+
+Kamu bisa membacanya dulu untuk memahami alurnya (install dependency, `prisma:generate`, build NestJS, lalu start production).
+
+Jika kamu ingin membandingkan dengan versi minimal, berikut bentuk baseline-nya:
 
 ```dockerfile
 FROM node:20-alpine
@@ -137,7 +144,39 @@ Catatan:
 docker build -t nestjs-demo:step23 .
 ```
 
-### 6.3 Jalankan container lokal
+### 6.3 Jalankan dengan Docker Compose (app + Postgres lokal)
+
+Repo juga menyediakan `docker-compose.yml` untuk menjalankan:
+
+- `db` (PostgreSQL)
+- `app` (NestJS)
+- tool profile: `migrate` dan `seed`
+
+Jalankan stack:
+
+```bash
+docker compose up -d
+```
+
+Jalankan migration (opsional, jika DB masih kosong):
+
+```bash
+docker compose --profile tools run --rm migrate
+```
+
+Seed data (opsional):
+
+```bash
+docker compose --profile tools run --rm seed
+```
+
+Lihat log:
+
+```bash
+docker compose logs -f app
+```
+
+### 6.4 Jalankan container lokal
 
 Contoh:
 
@@ -150,7 +189,7 @@ docker run --rm -p 3000:3000 \
   nestjs-demo:step23
 ```
 
-### 6.4 Smoke test lokal
+### 6.5 Smoke test lokal
 
 Di terminal lain:
 
@@ -162,7 +201,7 @@ curl -i http://localhost:3000/courses
 
 Jika endpoint merespons normal, container local run sudah benar.
 
-### 6.5 Catatan penting DB lokal vs DB cloud
+### 6.6 Catatan penting DB lokal vs DB cloud
 
 Saat menjalankan container lokal, ada dua pola koneksi database:
 

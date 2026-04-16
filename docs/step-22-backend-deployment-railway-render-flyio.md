@@ -231,7 +231,95 @@ Setelah service up:
 
 ---
 
-## 9. Smoke test pasca deploy (minimum)
+## 9. CLI commands (opsional) untuk deploy backend
+
+Gunakan bagian ini jika ingin deployment lewat command line.
+
+### 9.1 Railway CLI
+
+```bash
+# install (jika belum)
+npm i -g @railway/cli
+
+# login dan link ke project
+railway login
+railway link
+
+# cek project/service yang sedang terhubung
+railway status
+
+# set env wajib
+railway variables set DATABASE_URL="..."
+railway variables set JWT_SECRET="..."
+railway variables set JWT_REFRESH_SECRET="..."
+railway variables set COURSE_REPOSITORY_IMPL="prisma"
+
+# deploy source code saat ini
+railway up
+
+# buka URL service di browser (jika tersedia)
+railway open
+
+# lihat log deploy/runtime untuk debugging
+railway logs
+
+# jalankan one-off command di environment Railway (contoh: migration)
+railway run pnpm exec prisma migrate deploy
+```
+
+Workflow ringkas yang sering dipakai:
+
+```bash
+railway login
+railway link
+railway variables set DATABASE_URL="..."
+railway variables set JWT_SECRET="..."
+railway variables set JWT_REFRESH_SECRET="..."
+railway variables set COURSE_REPOSITORY_IMPL="prisma"
+railway up
+railway logs
+```
+
+### 9.2 Render (command-driven via Git)
+
+Untuk alur paling stabil di kelas, Render biasanya pakai GitHub auto-deploy.
+Command yang kamu jalankan dari lokal:
+
+```bash
+git add .
+git commit -m "deploy: update backend release"
+git push origin main
+```
+
+Setelah `git push`, Render akan build/deploy otomatis dari repo.
+
+### 9.3 Fly.io CLI
+
+```bash
+# login (jika belum)
+fly auth login
+
+# set secrets
+fly secrets set DATABASE_URL="..."
+fly secrets set JWT_SECRET="..."
+fly secrets set JWT_REFRESH_SECRET="..."
+fly secrets set COURSE_REPOSITORY_IMPL="prisma"
+
+# deploy
+fly deploy
+```
+
+### 9.4 Jalankan migration via CLI
+
+Setelah env production siap:
+
+```bash
+pnpm exec prisma migrate deploy
+```
+
+---
+
+## 10. Smoke test pasca deploy (minimum)
 
 Gunakan base URL production:
 
@@ -254,7 +342,7 @@ curl -s -X POST "$BASE_URL/auth/login" \
 
 ---
 
-## 10. Hardening minimum setelah go-live
+## 11. Hardening minimum setelah go-live
 
 - Simpan semua secret hanya di platform secret manager.
 - Nonaktifkan kebiasaan seed data demo di production rutin.
@@ -264,7 +352,7 @@ curl -s -X POST "$BASE_URL/auth/login" \
 
 ---
 
-## 11. Troubleshooting matrix
+## 12. Troubleshooting matrix
 
 ### App gagal boot, log menyebut missing env
 
@@ -293,7 +381,7 @@ curl -s -X POST "$BASE_URL/auth/login" \
 
 ---
 
-## 12. Tugas mandiri
+## 13. Tugas mandiri
 
 1. Deploy backend ke satu provider.
 2. Jalankan migration production.
@@ -303,7 +391,7 @@ curl -s -X POST "$BASE_URL/auth/login" \
 
 ---
 
-## 13. Checklist penilaian
+## 14. Checklist penilaian
 
 - Service backend berhasil online di internet.
 - Env vars wajib terpasang benar.
@@ -313,7 +401,7 @@ curl -s -X POST "$BASE_URL/auth/login" \
 
 ---
 
-## 14. Referensi lanjutan
+## 15. Referensi lanjutan
 
 - `docs/step-10-simple-deployment-railway-render.md`
 - `docs/step-21-database-deployment-railway-render-flyio.md`

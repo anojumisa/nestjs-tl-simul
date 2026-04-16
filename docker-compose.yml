@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nestjs_demo_db
+    environment:
+      POSTGRES_DB: learning_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - nestjs_demo_db_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_demo_app
+    depends_on:
+      - db
+    environment:
+      PORT: "3000"
+      COURSE_REPOSITORY_IMPL: "prisma"
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/learning_platform"
+      JWT_SECRET: "dev-jwt-secret-change-me"
+      JWT_REFRESH_SECRET: "dev-jwt-refresh-secret-change-me"
+    ports:
+      - "3000:3000"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_demo_migrate
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/learning_platform"
+    command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+    profiles: ["tools"]
+
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestjs_demo_seed
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/learning_platform"
+    command: ["pnpm", "prisma:seed"]
+    profiles: ["tools"]
+
+volumes:
+  nestjs_demo_db_data:

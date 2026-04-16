@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.git
+.DS_Store
+npm-debug.log
+pnpm-debug.log
+
+# local envs (do not bake secrets into image)
+.env
+.env.*
+
+# optional local artifacts
+terminals
+agent-transcripts

@@ -83,6 +83,34 @@ Kenapa perlu detail breakdown?
 - Saat `DATABASE_URL` gagal dipakai, kamu bisa debug menggunakan parameter terpisah.
 - Beberapa provider memberi URL internal dan URL external; kamu perlu tahu mana yang dipakai oleh app.
 
+### 5.1 Format `DATABASE_URL` (PostgreSQL)
+
+Format umum:
+
+```text
+postgresql://USER:PASSWORD@HOST:PORT/DB_NAME
+```
+
+Contoh:
+
+```text
+postgresql://myuser:mypassword@db.example.com:5432/learning_platform
+```
+
+Jika provider mewajibkan SSL, biasanya ditambahkan sebagai query param:
+
+```text
+postgresql://USER:PASSWORD@HOST:PORT/DB_NAME?sslmode=require
+```
+
+Catatan penting:
+
+- Jika `PASSWORD` mengandung karakter spesial (misalnya `@`, `:`, `/`, `#`), lakukan URL-encode terlebih dulu.
+- Beberapa provider memberi 2 jenis URL:
+  - **Direct connection** (lebih cocok untuk migration/CLI Prisma)
+  - **Pooled/transaction** (lebih cocok untuk runtime aplikasi pada skala tertentu)
+- Untuk project ini, Prisma datasource membaca `DATABASE_URL` dari environment (`prisma/schema.prisma`), jadi format di atas adalah yang utama.
+
 ---
 
 ## 6. Setup PostgreSQL di Railway
@@ -186,7 +214,159 @@ pnpm exec prisma migrate deploy
 
 ---
 
-## 9. Migration strategy untuk production
+## 9. Setup PostgreSQL di Supabase
+
+### 9.1 Buat project Supabase
+
+1. Login ke Supabase.
+2. Klik `New project`.
+3. Pilih organization, region, dan isi password database.
+
+### 9.2 Ambil connection string
+
+Dari `Project Settings` -> `Database`, ambil connection string PostgreSQL.
+
+Rekomendasi untuk Prisma:
+
+- Gunakan URI format yang disarankan Supabase untuk direct connection.
+- Jika ada opsi pooled vs direct, utamakan direct untuk migration CLI.
+
+### 9.3 Verifikasi migration
+
+Set `DATABASE_URL` dari Supabase ke `.env`, lalu jalankan:
+
+```bash
+pnpm prisma:generate
+pnpm exec prisma migrate deploy
+```
+
+### 9.4 Catatan khusus Supabase
+
+- Pastikan password database tidak mengandung karakter yang belum di-URL-encode.
+- Jika koneksi gagal, cek host, port, user, dan SSL requirement dari panel Supabase.
+
+---
+
+## 10. Setup PostgreSQL di Neon
+
+### 10.1 Buat project Neon
+
+1. Login ke Neon.
+2. Buat project baru.
+3. Neon akan membuat database + branch default.
+
+### 10.2 Ambil connection string
+
+Dari dashboard Neon, copy connection string PostgreSQL.
+
+Catatan:
+
+- Neon biasanya menyediakan mode pooled/direct.  
+- Untuk migration Prisma, direct connection lebih aman untuk command migration.
+
+### 10.3 Verifikasi migration
+
+Set `DATABASE_URL` dari Neon ke `.env`, lalu jalankan:
+
+```bash
+pnpm prisma:generate
+pnpm exec prisma migrate deploy
+```
+
+### 10.4 Catatan khusus Neon
+
+- Jika memakai branching database Neon, pastikan kamu migrate di branch yang benar.
+- Saat production, gunakan koneksi branch production, bukan branch testing.
+
+---
+
+## 11. CLI commands (opsional) untuk workflow database
+
+Jika kamu ingin alur command-line (bukan klik dashboard saja), gunakan referensi cepat ini.
+
+### 11.1 Railway (CLI)
+
+```bash
+# install (jika belum)
+npm i -g @railway/cli
+
+# login dan link ke project Railway
+railway login
+railway link
+
+# lihat variable project/service
+railway variables
+```
+
+Catatan:
+
+- Provision PostgreSQL biasanya tetap paling mudah lewat dashboard Railway.
+- Setelah DB jadi, gunakan `DATABASE_URL` yang diberikan untuk flow Prisma di bawah.
+
+### 11.2 Fly.io (CLI-first)
+
+```bash
+# login
+fly auth login
+
+# buat postgres cluster
+fly postgres create
+
+# lihat daftar postgres app
+fly postgres list
+```
+
+Jika perlu cek koneksi:
+
+```bash
+fly postgres connect -a <nama-postgres-app>
+```
+
+### 11.3 Supabase (CLI)
+
+```bash
+# install Supabase CLI (opsi npm)
+npm i -g supabase
+
+# login
+supabase login
+
+# link project (butuh project-ref dari dashboard)
+supabase link --project-ref <project-ref>
+```
+
+Catatan:
+
+- Provision DB Supabase tetap paling mudah via dashboard.
+- CLI Supabase berguna untuk workflow project dan integration, sedangkan `DATABASE_URL` tetap diambil dari project settings.
+
+### 11.4 Neon (CLI)
+
+Neon lebih umum dipakai via dashboard/API untuk provisioning awal.
+Jika kamu memakai Neon CLI di environment kamu, pastikan:
+
+- sudah login/auth,
+- project dan branch target sudah benar,
+- connection string yang dipakai adalah branch yang memang ingin dideploy.
+
+### 11.5 Prisma migration dari CLI lokal
+
+Setelah `DATABASE_URL` siap, jalankan:
+
+```bash
+pnpm prisma:generate
+pnpm exec prisma migrate deploy
+```
+
+Untuk data awal (opsional):
+
+```bash
+pnpm prisma:seed
+```
+
+---
+
+## 12. Migration strategy untuk production
 
 Gunakan prinsip ini:
 
@@ -203,7 +383,7 @@ Flow aman:
 
 ---
 
-## 10. Checklist keamanan database
+## 13. Checklist keamanan database
 
 - Gunakan password kuat (bukan default/sederhana).
 - Simpan credential di secret manager platform, bukan hardcode di repo.
@@ -213,7 +393,7 @@ Flow aman:
 
 ---
 
-## 11. Verifikasi koneksi dari aplikasi
+## 14. Verifikasi koneksi dari aplikasi
 
 Set env di backend:
 
@@ -231,7 +411,7 @@ Jika implementasi repository menunjukkan Prisma dan endpoint berhasil mengembali
 
 ---
 
-## 12. Troubleshooting cepat
+## 15. Troubleshooting cepat
 
 ### Error: authentication failed
 
@@ -259,7 +439,7 @@ Jika implementasi repository menunjukkan Prisma dan endpoint berhasil mengembali
 
 ---
 
-## 13. Tugas mandiri
+## 16. Tugas mandiri
 
 1. Provision PostgreSQL di salah satu provider.
 2. Simpan `DATABASE_URL` dan detail breakdown koneksi.
@@ -270,17 +450,17 @@ Jika implementasi repository menunjukkan Prisma dan endpoint berhasil mengembali
 
 ---
 
-## 14. Checklist penilaian
+## 17. Checklist penilaian
 
 - Database berhasil terprovision.
 - `DATABASE_URL` valid dan tersimpan aman.
 - Migration production sukses tanpa error.
 - Backend berhasil connect ke DB provider.
-- Kamu bisa menjelaskan perbedaan Railway vs Render vs Fly.io untuk use case kamu.
+- Kamu bisa menjelaskan perbedaan Railway, Render, Fly.io, Supabase, dan Neon untuk use case kamu.
 
 ---
 
-## 15. Next Step
+## 18. Next Step
 
 Lanjut ke deployment backend lengkap:
 
