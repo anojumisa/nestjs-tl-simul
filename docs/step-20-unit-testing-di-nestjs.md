@@ -443,7 +443,6 @@ Contoh naming:
 
 ---
 
-## 16. Coverage: cara baca dan target realistis
 ## 18. Coverage: cara baca dan target realistis
 
 Jalankan:
@@ -473,7 +472,6 @@ Jangan kejar angka semata; prioritaskan test pada:
 
 ---
 
-## 17. Common Mistakes (sering terjadi di kelas)
 ## 19. Common Mistakes (sering terjadi di kelas)
 
 - Test terlalu bergantung DB/API asli -> lambat dan flaky.
@@ -491,7 +489,6 @@ Praktik bagus:
 
 ---
 
-## 18. Alur Mengajar (saran 1 sesi 90-120 menit)
 ## 20. Alur Mengajar (saran 1 sesi 90-120 menit)
 
 1. Buka `src/app.controller.spec.ts` -> jelaskan AAA.
@@ -504,7 +501,6 @@ Praktik bagus:
 
 ---
 
-## 19. Checklist Penilaian
 ## 21. Checklist Penilaian
 
 - [ ] Mahasiswa bisa menjelaskan beda unit vs e2e test.
@@ -520,7 +516,6 @@ Praktik bagus:
 
 ---
 
-## 20. Next Step (preview)
 ## 22. Next Step (preview)
 
 - Tambahkan coverage threshold minimum per area (`auth` lebih ketat dari module lain).

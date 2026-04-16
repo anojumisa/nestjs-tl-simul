@@ -198,6 +198,10 @@ Ikuti urutan ini saat belajar atau mengajar:
 | 19 | Advanced authentication & security concepts (hashing, refresh token, CSP/CSRF, rate limiting, hardening) | [docs/step-19-advanced-authentication-security.md](docs/step-19-advanced-authentication-security.md) |
 | 19 | Commands & verification (advanced auth/security) | [docs/step-19-commands-and-verification.md](docs/step-19-commands-and-verification.md) |
 | 20 | Unit testing di NestJS (service/controller/guard, mocking, coverage) | [docs/step-20-unit-testing-di-nestjs.md](docs/step-20-unit-testing-di-nestjs.md) |
+| 21 | Database deployment PostgreSQL (Railway, Render, Fly.io) | [docs/step-21-database-deployment-railway-render-flyio.md](docs/step-21-database-deployment-railway-render-flyio.md) |
+| 22 | Backend deployment NestJS (Railway, Render, Fly.io) | [docs/step-22-backend-deployment-railway-render-flyio.md](docs/step-22-backend-deployment-railway-render-flyio.md) |
+| 23 | Introduction to Docker for deployment (local container + Render) | [docs/step-23-introduction-to-docker-and-deployment.md](docs/step-23-introduction-to-docker-and-deployment.md) |
+| 24 | VPS deployment dengan Docker Compose (NestJS) | [docs/step-24-vps-deployment-docker-compose-nestjs.md](docs/step-24-vps-deployment-docker-compose-nestjs.md) |
 
 ---
 
